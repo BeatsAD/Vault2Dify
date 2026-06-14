@@ -1,7 +1,7 @@
 {
 	"id": "vault-to-dify",
 	"name": "Vault2Dify",
-	"version": "3.0.0",
+	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Sync selected Obsidian Markdown notes to your configured Dify Knowledge Base.",
 	"author": "WenBin",
