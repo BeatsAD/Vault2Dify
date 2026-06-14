@@ -1,0 +1,1835 @@
+/* Dify Sync Plugin Styles */
+
+.dify-sync-ribbon-class {
+    color: var(--text-muted);
+}
+
+.dify-sync-ribbon-class:hover {
+    color: var(--text-normal);
+}
+
+.dify-sync-error {
+    color: var(--text-error) !important;
+    font-weight: bold;
+}
+
+/* Status bar styling */
+.status-bar-item.dify-sync-error {
+    background-color: var(--background-modifier-error);
+    color: var(--text-error);
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+/* Sync Progress Notices */
+.notice.dify-sync-progress {
+    background-color: var(--background-primary);
+    border-left: 4px solid var(--interactive-accent);
+    font-family: 'Courier New', Consolas, monospace;
+    white-space: pre-line;
+    min-width: 300px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.notice.dify-sync-complete {
+    background-color: var(--background-modifier-success);
+    border-left: 4px solid var(--text-success);
+    white-space: pre-line;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.notice.dify-sync-error-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background-color: var(--background-modifier-error);
+    border-left: 4px solid var(--text-error);
+    white-space: pre-line;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.notice.dify-sync-error-notice::before {
+    content: "";
+    flex: 0 0 8px;
+    width: 8px;
+    height: 8px;
+    margin-top: 0.45em;
+    border-radius: 999px;
+    background: var(--text-error);
+}
+
+/* Progress bar styling */
+.dify-sync-progress .notice-text {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.dify-sync-diagnostic-error {
+    color: var(--text-error);
+}
+
+/* Enhanced status bar for sync states */
+.status-bar-item.dify-sync-syncing {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    padding: 2px 6px;
+    border-radius: 3px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.dify-sync-settings *,
+.dify-sync-modal * {
+    box-sizing: border-box;
+}
+
+.dify-sync-settings .github-link,
+.dify-sync-modal .dropdown-trigger {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.35;
+}
+
+.dify-sync-modal input,
+.dify-sync-modal select,
+.dify-sync-modal textarea {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.dify-sync-settings .is-hidden,
+.dify-sync-modal .is-hidden {
+    display: none !important;
+}
+
+/* Theme bridge: Obsidian variables shared by the settings page and plugin modals. */
+.dify-sync-settings,
+.dify-sync-modal {
+    --dify-prototype-panel: var(--background-secondary);
+    --dify-prototype-card: var(--background-primary);
+    --dify-prototype-border: var(--background-modifier-border);
+    --dify-prototype-muted: var(--text-muted);
+    --dify-prototype-accent: var(--interactive-accent);
+    --dify-prototype-success: var(--text-success);
+    --dify-prototype-danger: var(--text-error);
+    --dify-prototype-warning: var(--text-warning, #f6c85f);
+    --dify-prototype-faint: var(--text-faint);
+    --dify-prototype-panel-2: var(--background-modifier-hover);
+    --dify-prototype-accent-strong: var(--interactive-accent-hover);
+    --bg: var(--background-primary);
+    --rail: var(--background-secondary);
+    --panel: var(--background-secondary);
+    --panel-2: var(--dify-prototype-panel-2);
+    --field: var(--background-primary);
+    --border: var(--background-modifier-border);
+    --border-hover: var(--background-modifier-border-hover, var(--interactive-accent));
+    --border-focus: var(--background-modifier-border-focus, var(--interactive-accent));
+    --border-soft: var(--background-modifier-border);
+    --text: var(--text-normal);
+    --muted: var(--text-muted);
+    --faint: var(--text-faint);
+    --accent: var(--interactive-accent);
+    --accent-strong: var(--interactive-accent-hover);
+    --accent-text: var(--text-on-accent, #ffffff);
+    --success: var(--text-success);
+    --danger: var(--dify-prototype-danger, #ff6b6b);
+    --warning: var(--dify-prototype-warning, #f6c85f);
+    --dify-body-font-size: 0.875rem;
+}
+
+.dify-sync-settings {
+    width: min(100%, 920px);
+    max-width: 920px;
+    padding-bottom: 1.75rem;
+    color: var(--text-normal);
+}
+
+/* Topbar and heading reset: keep Obsidian theme heading styles from shifting the restored layout. */
+.dify-sync-settings .topbar,
+.dify-sync-settings .section-head,
+.dify-sync-modal .pending-mapping-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.dify-sync-settings .topbar {
+    margin-bottom: 0.625rem;
+}
+
+.dify-sync-settings .title-line {
+    flex: 1 1 auto;
+    flex-direction: column;
+}
+
+.dify-sync-settings .title-line,
+.dify-sync-settings .heading-line,
+.dify-sync-settings .label-line,
+.dify-sync-modal .modal-title-line,
+.dify-sync-modal .label-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+}
+
+.dify-sync-settings .title-line {
+    align-items: flex-start;
+}
+
+.dify-sync-settings .title-line,
+.dify-sync-settings .heading-line {
+    width: fit-content;
+    max-width: 100%;
+    gap: 4px;
+}
+
+.dify-sync-settings .heading-text {
+    display: inline-block !important;
+    position: static !important;
+    width: auto !important;
+    max-width: 100% !important;
+    flex: 0 0 auto !important;
+    height: auto !important;
+    clip: auto !important;
+    overflow: visible !important;
+    visibility: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-indent: 0 !important;
+    color: var(--text-normal);
+    text-align: left;
+}
+
+.dify-sync-settings .title-line .heading-text {
+    all: unset;
+    display: block !important;
+    box-sizing: border-box;
+    width: auto !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-indent: 0 !important;
+    color: var(--text-normal);
+    text-align: left;
+    font-size: 1.45rem;
+    font-weight: 720;
+    letter-spacing: 0;
+    line-height: 1.2;
+}
+
+.dify-sync-settings .settings-subtitle {
+    margin: 0.125rem 0 0;
+    max-width: min(100%, 34rem);
+    color: var(--text-muted);
+    font-size: 0.86rem;
+    font-weight: 400;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.dify-sync-settings .title-line > .heading-text,
+.dify-sync-settings .title-line > .settings-subtitle {
+    align-self: flex-start;
+    margin-left: 0 !important;
+    text-align: left;
+}
+
+.dify-sync-settings .top-actions,
+.dify-sync-settings .connection-action-buttons,
+.dify-sync-settings .sync-actions,
+.dify-sync-modal .modal-actions,
+.dify-sync-modal .pending-bulk-actions,
+.dify-sync-settings .row-actions,
+.dify-sync-modal .row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dify-sync-settings .top-actions {
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    gap: 6px;
+}
+
+.dify-sync-settings .top-actions,
+.dify-sync-settings .connection-action-buttons,
+.dify-sync-settings .sync-actions,
+.dify-sync-modal .modal-actions {
+    justify-content: flex-end;
+}
+
+.dify-sync-settings .manual-sync-actions {
+    margin-block: 12px;
+}
+
+.dify-sync-settings .sync-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.625rem;
+    margin-bottom: 1rem;
+}
+
+.dify-sync-settings .metric {
+    min-height: 4.125rem;
+    padding: 0.75rem;
+    border: 1px solid var(--dify-prototype-border);
+    border-radius: 0.5rem;
+    background: var(--dify-prototype-panel);
+}
+
+.dify-sync-settings .metric-label {
+    color: var(--dify-prototype-muted);
+    font-size: 0.78rem;
+}
+
+.dify-sync-settings .metric-value {
+    margin-top: 0.25rem;
+    color: var(--text-normal);
+    font-size: 1.45rem;
+    font-weight: 740;
+    line-height: 1.1;
+}
+
+.dify-sync-settings .metric-value.success {
+    color: var(--dify-prototype-success);
+}
+
+.dify-sync-settings .metric-value.accent {
+    color: var(--dify-prototype-accent, var(--interactive-accent));
+}
+
+.dify-sync-settings .metric-value.warning {
+    color: var(--text-warning, #f6c85f);
+}
+
+.dify-sync-settings .metric-value.error {
+    color: var(--text-error);
+}
+
+.dify-sync-settings .section {
+    margin-top: 0.875rem;
+}
+
+.dify-sync-settings .section-head {
+    margin-bottom: 0.5rem;
+}
+
+.dify-sync-settings .section-head h2,
+.dify-sync-settings .heading-line .heading-text {
+    margin: 0;
+    font-size: 1.08rem;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.dify-sync-settings .section-card {
+    padding: 14px 16px;
+    border: 1px solid var(--dify-prototype-border);
+    border-radius: 0.5rem;
+    background: var(--dify-prototype-panel);
+}
+
+section[aria-labelledby="mapping-title"] .section-card {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.dify-sync-settings .native-setting-row.setting-row {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(320px, 430px);
+    gap: 28px;
+    align-items: center;
+    min-height: 44px;
+    margin: 0;
+    padding: 4px 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.dify-sync-settings .native-setting-row.setting-row > .setting-item-info,
+.dify-sync-settings .native-setting-row.advanced-field > .setting-item-info {
+    min-width: 0;
+    padding: 0;
+    background: transparent;
+}
+
+.dify-sync-settings .native-setting-row.setting-row > .setting-item-control,
+.dify-sync-settings .native-setting-row.advanced-field > .setting-item-control {
+    min-width: 0;
+    width: 100%;
+    padding: 0;
+    background: transparent;
+}
+
+.dify-sync-settings .native-setting-row .setting-item-description {
+    display: none;
+}
+
+.dify-sync-settings .setting-label,
+.dify-sync-modal .setting-label {
+    color: var(--text-normal);
+    font-weight: 650;
+}
+
+.dify-sync-settings .required-marker {
+    color: var(--text-error);
+    font-weight: 700;
+    line-height: 1;
+}
+
+.dify-sync-settings .native-setting-row.advanced-field .setting-label {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.dify-sync-settings .setting-control,
+.dify-sync-settings .setting-item-control {
+    min-width: 0;
+}
+
+.dify-sync-settings input,
+.dify-sync-modal input {
+    width: 100%;
+    min-height: 2.25rem;
+}
+
+.dify-sync-settings .setting-item-control:has(.secret-toggle) {
+    position: relative;
+}
+
+.dify-sync-settings .setting-item-control:has(.secret-toggle) input {
+    padding-inline-end: 3rem;
+}
+
+/* Secret toggle override: neutralize Obsidian button chrome inside the password input. */
+.dify-sync-settings .secret-toggle,
+.dify-sync-settings .icon,
+.dify-sync-modal .icon {
+    display: inline-grid;
+    place-items: center;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    padding: 0;
+}
+
+.dify-sync-settings .secret-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    width: 30px;
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
+    padding: 0 !important;
+    line-height: 1;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--dify-prototype-muted);
+    transform: translateY(-50%);
+}
+
+.dify-sync-settings .secret-toggle .svg-icon {
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    transform: translateY(-1px);
+}
+
+.dify-sync-settings .secret-toggle:hover,
+.dify-sync-settings .secret-toggle:active,
+.dify-sync-settings .secret-toggle:focus-visible {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--text-normal);
+    transform: translateY(-50%);
+}
+
+.dify-sync-settings .advanced-connection,
+.dify-sync-settings #advanced-sync {
+    display: grid;
+    gap: 4px 24px;
+    margin-top: 4px;
+}
+
+.dify-sync-settings .advanced-connection {
+    grid-template-columns: 1fr;
+}
+
+.dify-sync-settings .native-setting-row.advanced-field,
+.dify-sync-modal .advanced-field {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(320px, 430px);
+    gap: 28px;
+    align-items: center;
+    min-height: 40px;
+    min-width: 0;
+}
+
+.dify-sync-settings .native-setting-row.advanced-field {
+    margin: 0;
+    padding: 4px 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.dify-sync-settings #advanced-sync {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dify-sync-settings #advanced-sync .native-setting-row.advanced-field {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px;
+}
+
+.dify-sync-settings .native-setting-row.advanced-field .setting-label,
+.dify-sync-modal .advanced-field label {
+    color: var(--text-normal);
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.dify-sync-settings .dataset-refresh-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    position: relative;
+    margin-top: 8px;
+}
+
+.dify-sync-settings .status-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--dify-prototype-muted);
+    overflow-wrap: anywhere;
+}
+
+.dify-sync-settings .status-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--dify-prototype-muted);
+}
+
+.dify-sync-settings .status-dot.is-muted {
+    background: var(--dify-prototype-muted);
+}
+
+.dify-sync-settings .status-dot.is-success {
+    background: var(--dify-prototype-success);
+}
+
+.dify-sync-settings .status-dot.is-error {
+    background: var(--dify-prototype-danger);
+}
+
+.dify-sync-modal .dropdown-trigger {
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease, color 120ms ease;
+}
+
+.dify-sync-modal .dropdown-trigger:hover {
+    border-color: var(--border-hover);
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+.dify-sync-modal .dropdown-trigger:active {
+    border-color: var(--border-hover);
+    background: var(--background-modifier-active);
+}
+
+.dify-sync-modal .dropdown-trigger:focus-visible {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 28%, transparent);
+    outline: 0;
+}
+
+.dify-sync-modal input,
+.dify-sync-modal select,
+.dify-sync-modal textarea {
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.dify-sync-modal input:hover,
+.dify-sync-modal select:hover,
+.dify-sync-modal textarea:hover {
+    border-color: var(--border-hover);
+    background: var(--background-modifier-hover);
+}
+
+.dify-sync-modal input:active,
+.dify-sync-modal select:active,
+.dify-sync-modal textarea:active {
+    border-color: var(--border-hover);
+    background: var(--background-modifier-active);
+}
+
+.dify-sync-modal input:focus,
+.dify-sync-modal textarea:focus {
+    cursor: text;
+}
+
+.dify-sync-modal input:focus-visible,
+.dify-sync-modal select:focus-visible,
+.dify-sync-modal textarea:focus-visible {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 24%, transparent);
+    outline: 0;
+}
+
+.dify-sync-settings .github-link,
+.dify-sync-settings .language-button,
+.dify-sync-settings .help-button {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    min-height: 2rem;
+    padding: 0;
+    text-decoration: none;
+}
+
+.dify-sync-settings .callout {
+    position: absolute;
+    top: 50%;
+    right: 388px;
+    display: flex;
+    gap: 10px;
+    max-width: 360px;
+    padding: 8px 10px;
+    border: 1px solid rgba(118, 201, 130, 0.35);
+    border-radius: 0.5rem;
+    background: var(--dify-prototype-card);
+    color: var(--dify-prototype-muted);
+    transform: translateY(-50%);
+}
+
+.dify-sync-settings .callout[hidden] {
+    display: none;
+}
+
+.dify-sync-settings .callout strong {
+    margin-right: 0.375rem;
+    color: var(--text-normal);
+}
+
+.dify-sync-settings .mapping-table,
+.dify-sync-modal .mapping-table {
+    display: grid;
+    margin-top: 0.75rem;
+    border: 1px solid var(--dify-prototype-border);
+    border-radius: 0.5rem;
+    background: transparent;
+    overflow-x: auto;
+}
+
+.dify-sync-settings .main-mapping-table,
+.dify-sync-modal .pending-mapping-table {
+    --dify-shared-mapping-row-height: 54px;
+    height: calc(var(--dify-shared-mapping-row-height) * 5);
+    align-content: start;
+    background: transparent;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.dify-sync-settings .main-mapping-table {
+    --dify-main-mapping-row-height: 54px;
+}
+
+.dify-sync-settings .main-mapping-table .mapping-header,
+.dify-sync-settings .main-mapping-table .mapping-row,
+.dify-sync-modal .pending-mapping-table .mapping-header,
+.dify-sync-modal .pending-mapping-table .mapping-row {
+    box-sizing: border-box;
+    height: var(--dify-shared-mapping-row-height);
+    min-height: var(--dify-shared-mapping-row-height);
+}
+
+.dify-sync-settings .main-mapping-empty {
+    box-sizing: border-box;
+    display: grid;
+    place-items: center;
+    height: calc(var(--dify-main-mapping-row-height) * 4);
+    min-height: calc(var(--dify-main-mapping-row-height) * 4);
+    padding: 0.75rem;
+    color: var(--dify-prototype-muted);
+    text-align: center;
+}
+
+.dify-sync-settings .main-mapping-pagination {
+    --dify-mapping-pagination-gap: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--dify-mapping-pagination-gap);
+    min-height: 30px;
+    margin-top: 0;
+    padding: var(--dify-mapping-pagination-gap) var(--dify-mapping-pagination-gap) var(--dify-mapping-pagination-gap) 0;
+    color: var(--dify-prototype-muted);
+    font-size: 13px;
+}
+
+.dify-sync-settings .main-mapping-pagination button {
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+    min-height: 30px;
+    padding: 0;
+}
+
+.dify-sync-settings .mapping-header,
+.dify-sync-settings .mapping-row,
+.dify-sync-modal .mapping-header,
+.dify-sync-modal .mapping-row {
+    display: grid;
+    grid-template-columns: 3rem minmax(10rem, 1.1fr) minmax(13rem, 1.4fr) 7rem 5.5rem;
+    gap: 0.625rem;
+    align-items: center;
+    min-width: 46rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.dify-sync-settings .mapping-header,
+.dify-sync-modal .mapping-header {
+    border-bottom: 1px solid var(--dify-prototype-border);
+    color: var(--text-normal);
+    font-size: 0.84rem;
+    font-weight: 700;
+}
+
+.dify-sync-settings .mapping-row + .mapping-row,
+.dify-sync-modal .mapping-row + .mapping-row {
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.dify-sync-settings .folder-name,
+.dify-sync-modal .folder-name {
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+
+.dify-sync-settings .tags,
+.dify-sync-modal .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+}
+
+.dify-sync-settings .tag,
+.dify-sync-modal .tag {
+    padding: 0.125rem 0.5rem;
+    border: 1px solid var(--dify-prototype-border);
+    border-radius: 999px;
+    color: var(--text-normal);
+    background: var(--background-secondary);
+    font-size: 0.78rem;
+}
+
+.dify-sync-settings .mapping-status-control,
+.dify-sync-modal .mapping-status-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 0;
+}
+
+.dify-sync-settings .mapping-status-label,
+.dify-sync-modal .mapping-status-label {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.dify-sync-settings .switch-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.dify-sync-settings .toggle {
+    width: 2.75rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    background: var(--dify-prototype-accent);
+    position: relative;
+    cursor: pointer;
+}
+
+.dify-sync-settings .toggle::after {
+    content: "";
+    position: absolute;
+    top: 0.1875rem;
+    right: 0.1875rem;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 999px;
+    background: var(--text-on-accent);
+}
+
+.dify-sync-settings .toggle.off {
+    background: var(--background-modifier-border);
+}
+
+.dify-sync-settings .toggle.off::after {
+    right: auto;
+    left: 0.1875rem;
+}
+
+.dify-sync-settings .diagnostic-fold {
+    margin-top: 0.875rem;
+    border: 1px solid var(--dify-prototype-border);
+    border-radius: 0.5rem;
+    background: var(--dify-prototype-card);
+}
+
+.dify-sync-settings .diagnostic-fold summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    cursor: pointer;
+}
+
+.dify-sync-settings .diagnostic-body {
+    padding: 0 0.75rem 0.75rem;
+    color: var(--dify-prototype-muted);
+    line-height: 1.5;
+}
+
+.dify-sync-modal .dropdown-box {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+}
+
+.dify-sync-modal .dropdown-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: 2.25rem;
+    padding: 0.375rem 0.625rem;
+}
+
+.dify-sync-modal.mapping-modal .dropdown-trigger {
+    min-height: 36px;
+    padding: 7px 4px 7px 10px;
+    border-color: var(--dify-prototype-border);
+    border-radius: 0.5rem;
+    background: var(--dify-mapping-field-bg, var(--background-primary));
+    line-height: 1.45;
+    text-align: left;
+}
+
+.dify-sync-modal .dropdown-caret {
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 14px;
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    margin-left: auto;
+    align-self: center;
+    color: var(--dify-prototype-faint, var(--text-faint));
+    line-height: 1;
+}
+
+.dify-sync-modal .dropdown-caret svg {
+    display: block;
+    width: 14px;
+    height: 14px;
+}
+
+.dify-sync-modal .dropdown-menu {
+    position: absolute;
+    z-index: 50;
+    inset-inline: 0;
+    top: calc(100% + 0.25rem);
+    max-height: 16rem;
+    overflow: auto;
+    padding: 0.375rem;
+    border: 1px solid var(--dify-prototype-border);
+    border-radius: 0.5rem;
+    background: var(--background-primary);
+    box-shadow: var(--shadow-s);
+}
+
+.dify-sync-modal.mapping-modal .dropdown-menu {
+    z-index: 120;
+    top: calc(100% + 6px);
+    display: grid;
+    gap: 4px;
+    max-height: 286px;
+    padding: 10px;
+    border-radius: 0.5rem;
+    background: var(--dify-mapping-panel-bg, var(--background-secondary));
+    box-shadow: var(--shadow-s);
+    overscroll-behavior: contain;
+}
+
+.dify-sync-modal.mapping-modal #folder-dropdown-menu,
+.dify-sync-modal.mapping-modal #dataset-dropdown-menu {
+    height: 440px;
+    max-height: 440px;
+}
+
+.dify-sync-modal.mapping-modal #folder-dropdown-menu {
+    grid-template-rows: auto minmax(0, 1fr);
+}
+
+.dify-sync-modal.mapping-modal #dataset-dropdown-menu {
+    align-content: start;
+    grid-auto-rows: max-content;
+}
+
+.dify-sync-modal.mapping-modal #dataset-dropdown-menu:has(.dataset-empty-state) {
+    align-content: center;
+}
+
+.dify-sync-modal .dropdown-menu[hidden] {
+    display: none;
+}
+
+.dify-sync-modal .dropdown-trigger [data-role] {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Modal dropdown option override: menu rows stay flat, not framed like buttons. */
+.dify-sync-modal .select-option {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin: 0.125rem 0;
+    border-color: transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.dify-sync-modal .select-option:hover,
+.dify-sync-modal .select-option:focus-visible {
+    border-color: transparent !important;
+    background: var(--background-modifier-hover) !important;
+    box-shadow: none !important;
+}
+
+.dify-sync-settings .help-icon {
+    display: inline-grid;
+    place-items: center;
+    position: relative;
+    flex: 0 0 auto;
+    width: 1.0625rem;
+    height: 1.0625rem;
+    min-width: 1.0625rem;
+    min-height: 1.0625rem;
+    border-radius: 999px;
+    background: var(--background-modifier-hover);
+    color: var(--dify-prototype-muted, var(--text-muted));
+    cursor: help;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.dify-sync-modal.mapping-modal {
+    --dify-mapping-modal-bg: var(--background-primary);
+    --dify-mapping-panel-bg: var(--background-secondary);
+    --dify-mapping-field-bg: var(--background-primary);
+    --dify-mapping-row-bg: var(--background-secondary);
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: auto auto auto;
+    width: min(980px, calc(100vw - 64px));
+    height: auto;
+    max-height: calc(100vh - 56px);
+    padding-inline: 0;
+    overflow: visible;
+}
+
+.modal.dify-sync-modal-shell.mapping-modal-shell {
+    width: min(980px, calc(100vw - 64px));
+    height: auto;
+    max-width: calc(100vw - 64px);
+    max-height: calc(100vh - 56px);
+    padding: 0;
+    border: 1px solid var(--dify-prototype-border);
+    border-radius: 10px;
+    background: var(--dify-mapping-modal-bg, var(--background-primary));
+    box-shadow: var(--shadow-l);
+    overflow: visible;
+}
+
+.modal.dify-sync-modal-shell.confirm-modal-shell {
+    box-sizing: border-box;
+    width: min(28rem, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.modal.dify-sync-modal-shell.confirm-modal-shell .modal-close-button {
+    top: 18px;
+    right: 18px;
+}
+
+.modal.dify-sync-modal-shell.help-modal-shell {
+    width: min(760px, calc(100vw - 2rem));
+    height: min(720px, calc(100vh - 56px));
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100vh - 56px);
+    padding: 0;
+    border: 1px solid var(--dify-prototype-border);
+    border-radius: 10px;
+    background: var(--background-primary);
+    box-shadow: 0 22px 70px rgba(0, 0, 0, 0.46);
+    overflow: hidden;
+}
+
+.dify-sync-modal.help-modal {
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    width: 100%;
+    height: min(720px, calc(100vh - 56px));
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.modal.dify-sync-modal-shell.help-modal-shell .modal-close-button {
+    top: 18px;
+    right: 18px;
+}
+
+.modal.dify-sync-modal-shell.mapping-modal-shell .modal-close-button {
+    top: 18px;
+    right: 18px;
+}
+
+.dify-sync-modal .modal-head,
+.dify-sync-modal .modal-actions {
+    padding-inline: 18px;
+}
+
+.dify-sync-modal .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding-top: 18px;
+    padding-bottom: 12px;
+    border-bottom: 0;
+}
+
+.dify-sync-modal.help-modal .modal-head {
+    min-height: 42px;
+    padding: 18px 64px 18px 18px;
+}
+
+.dify-sync-modal.mapping-modal .modal-head {
+    padding: 18px 64px 12px 18px;
+}
+
+.dify-sync-modal.help-modal .modal-title-line {
+    align-self: center;
+}
+
+.dify-sync-modal.mapping-modal .modal-title-line h2 {
+    flex: 0 0 auto;
+    margin: 0;
+    font-size: 18px;
+    font-weight: 680;
+    line-height: 1.2;
+    letter-spacing: 0;
+    white-space: nowrap;
+}
+
+.dify-sync-modal.help-modal .modal-title-line h2 {
+    flex: 0 1 auto;
+    margin: 0;
+    color: var(--text-normal);
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0;
+}
+
+.dify-sync-modal .help-modal-body {
+    display: block;
+    min-height: 0;
+    padding: 0 22px 22px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.dify-sync-modal .help-section {
+    padding: 18px 0;
+    border-top: 1px solid var(--dify-prototype-border);
+}
+
+.dify-sync-modal .help-section:first-child {
+    border-top: 0;
+}
+
+.dify-sync-modal .help-section h3 {
+    margin: 0 0 0.625rem;
+    color: var(--text-normal);
+    font-size: 0.98rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: 0;
+}
+
+.dify-sync-modal .help-section p,
+.dify-sync-modal .help-list,
+.dify-sync-modal .help-error-list {
+    margin: 0.5rem 0 0;
+    color: var(--text-muted);
+    font-size: var(--dify-body-font-size);
+    line-height: 1.6;
+}
+
+.dify-sync-modal .help-list {
+    padding-inline-start: 1.25rem;
+}
+
+.dify-sync-modal .help-list li + li {
+    margin-top: 0.25rem;
+}
+
+.dify-sync-modal .help-error-list {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.dify-sync-modal .help-error-item {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--dify-prototype-border);
+    border-radius: 0.375rem;
+    background: var(--background-secondary);
+}
+
+.dify-sync-modal .help-error-item strong {
+    color: var(--text-normal);
+    font-size: var(--dify-body-font-size);
+    line-height: 1.4;
+}
+
+.dify-sync-modal .help-error-item span {
+    color: var(--text-muted);
+    font-size: var(--dify-body-font-size);
+    line-height: 1.5;
+}
+
+.dify-sync-modal .modal-actions {
+    box-sizing: border-box;
+    margin-top: 0;
+    padding-top: 10px;
+    padding-bottom: 18px;
+    border-top: 0;
+    border-bottom: 0;
+    background: var(--dify-mapping-modal-bg, var(--background-primary));
+}
+
+.dify-sync-modal.mapping-modal .modal-actions {
+    padding-top: 24px;
+}
+
+.dify-sync-modal.mapping-modal .modal-actions > button {
+    min-height: 34px;
+    padding: 6px 12px;
+}
+
+.dify-sync-modal .modal-body {
+    display: grid;
+    gap: 0;
+    min-height: 0;
+    padding: 0 18px;
+    min-width: 0;
+    overflow: visible;
+}
+
+.dify-sync-modal .mapping-builder {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr);
+    gap: 8px;
+    align-items: end;
+    width: 100%;
+    justify-self: stretch;
+}
+
+.dify-sync-modal .mapping-panel {
+    display: grid;
+    gap: 0.5rem;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+.dify-sync-modal .mapping-arrow {
+    display: grid;
+    place-items: center;
+    min-height: 36px;
+    color: var(--text-normal);
+}
+
+.dify-sync-modal .mapping-arrow-icon {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--background-modifier-hover);
+    color: var(--text-muted);
+}
+
+.dify-sync-modal .mapping-arrow-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+}
+
+.dify-sync-modal .folder-search {
+    margin-bottom: 0.375rem;
+    min-height: 34px;
+    padding: 7px 10px;
+    background: var(--dify-mapping-row-bg, var(--background-secondary));
+}
+
+.dify-sync-modal .folder-tree {
+    height: 100%;
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+.dify-sync-modal .dataset-option {
+    width: 100%;
+    border-radius: 0.375rem;
+}
+
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree {
+    padding: 4px 0;
+    color: var(--text-normal);
+}
+
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-folder,
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-file {
+    margin: 0;
+}
+
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-folder-title,
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-file-title {
+    display: grid;
+    align-items: center;
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+    min-height: 28px;
+    width: 100%;
+    padding: 2px 8px 2px 0;
+    border-radius: var(--radius-s, 4px);
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-folder-title:hover,
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-folder-title.is-selected,
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-file-title:hover,
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-file-title.is-selected {
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-folder-title.is-selected,
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-file-title.is-selected {
+    background: var(--background-modifier-active-hover, var(--background-modifier-hover));
+}
+
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-file-title {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .dify-sync-folder-toggle {
+    position: static !important;
+    inset: auto !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    flex: 0 0 24px;
+    width: 24px;
+    min-width: 24px;
+    height: 28px;
+    min-height: 28px;
+    margin: 0 !important;
+    padding: 0;
+    line-height: 1;
+    transform: none !important;
+    color: var(--text-faint);
+}
+
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .dify-sync-folder-toggle svg {
+    display: block;
+    width: 14px;
+    height: 14px;
+    transform-origin: center;
+    transition: transform 120ms ease;
+}
+
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-folder-title:not(.is-collapsed) > .dify-sync-folder-toggle svg {
+    transform: rotate(90deg);
+}
+
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .dify-sync-folder-toggle.is-leaf {
+    visibility: hidden;
+}
+
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-folder-title-content,
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-file-title-content {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .dify-sync-folder-count {
+    margin-left: 8px;
+    color: var(--text-faint);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-folder-children {
+    margin-left: 24px;
+    padding-left: 0;
+}
+
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-folder[hidden],
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-file[hidden],
+.dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .nav-folder-children[hidden] {
+    display: none;
+}
+
+.dify-sync-modal .dataset-option {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: 7px;
+    align-items: center;
+    min-height: 46px;
+    padding: 4px 8px;
+    border: 1px solid transparent;
+    border-radius: 0.375rem;
+    cursor: pointer;
+}
+
+.dify-sync-modal .dataset-option:hover,
+.dify-sync-modal .dataset-option:focus-within {
+    border-color: var(--border-hover);
+    background: var(--dify-prototype-panel-2);
+    color: var(--text-normal);
+}
+
+.dify-sync-modal .dataset-option.is-selected {
+    border-color: var(--interactive-accent);
+    background: color-mix(in srgb, var(--interactive-accent) 16%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+    color: var(--text-normal);
+}
+
+.dify-sync-modal .dataset-option.is-selected:hover,
+.dify-sync-modal .dataset-option.is-selected:focus-within {
+    border-color: var(--border-focus);
+    background: color-mix(in srgb, var(--interactive-accent-hover) 22%, transparent);
+}
+
+.dify-sync-modal .dataset-empty-state {
+    display: grid;
+    place-items: center;
+    min-height: 100%;
+    padding: 24px 12px;
+    color: var(--dify-prototype-muted, var(--text-muted));
+    font-size: var(--dify-body-font-size);
+    line-height: 1.45;
+    text-align: center;
+}
+
+.dify-sync-modal .dataset-option small {
+    display: block;
+    margin-top: 0;
+    color: var(--dify-prototype-muted);
+    font-family: var(--font-monospace, monospace);
+    font-size: 11px;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dify-sync-modal .dataset-option input[type="checkbox"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.dify-sync-modal .dataset-checkmark {
+    display: inline-grid;
+    place-items: center;
+    box-sizing: border-box;
+    inline-size: 16px;
+    block-size: 16px;
+    width: 16px;
+    min-width: 16px;
+    max-width: 16px;
+    height: 16px;
+    min-height: 16px;
+    max-height: 16px;
+    aspect-ratio: 1 / 1;
+    justify-self: center;
+    border: 1px solid color-mix(in srgb, var(--dify-prototype-border) 78%, var(--text-muted));
+    border-radius: 4px;
+    background: var(--dify-mapping-field-bg, var(--background-primary));
+    color: transparent;
+    transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease, color 120ms ease;
+}
+
+.dify-sync-modal .dataset-checkmark svg {
+    width: 12px;
+    height: 12px;
+    opacity: 0;
+    stroke-width: 3;
+    transition: opacity 120ms ease;
+}
+
+.dify-sync-modal .dataset-option:hover .dataset-checkmark,
+.dify-sync-modal .dataset-option:focus-within .dataset-checkmark {
+    border-color: var(--border-hover);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+}
+
+.dify-sync-modal .dataset-option input[type="checkbox"]:checked + .dataset-checkmark {
+    border-color: var(--interactive-accent);
+    background: var(--interactive-accent);
+    color: var(--accent-text);
+}
+
+.dify-sync-modal .dataset-option input[type="checkbox"]:checked + .dataset-checkmark svg {
+    opacity: 1;
+}
+
+.dify-sync-modal .dataset-option > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dify-sync-modal .dataset-select-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: start;
+}
+
+.dify-sync-modal .pending-mappings {
+    --dify-pending-mapping-row-height: 54px;
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+    min-width: 0;
+}
+
+.dify-sync-modal .pending-bulk-actions {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    margin-inline-end: 0;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.dify-sync-modal .bulk-action {
+    min-height: 28px;
+    padding: 3px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.dify-sync-modal .mapping-table {
+    overflow-x: auto;
+    overflow-y: hidden;
+    align-content: start;
+}
+
+.dify-sync-modal .pending-mappings .mapping-table {
+    margin-top: 0;
+}
+
+.dify-sync-modal .pending-mappings > .pending-empty {
+    box-sizing: border-box;
+    display: grid;
+    place-items: center;
+    height: calc(var(--dify-pending-mapping-row-height) * 5);
+    padding: 0;
+    border: 1px dashed var(--dify-prototype-border);
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.015);
+    color: var(--dify-prototype-muted);
+    text-align: center;
+}
+
+.dify-sync-modal .pending-mappings > .pending-empty[hidden],
+.dify-sync-modal .pending-mappings .mapping-table[hidden],
+.dify-sync-modal .pending-mappings > .pending-empty.is-hidden,
+.dify-sync-modal .pending-mappings .mapping-table.is-hidden {
+    display: none;
+}
+
+.dify-sync-modal .mapping-pagination {
+    --dify-mapping-pagination-gap: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--dify-mapping-pagination-gap);
+    min-height: 30px;
+    padding: var(--dify-mapping-pagination-gap) var(--dify-mapping-pagination-gap) var(--dify-mapping-pagination-gap) 0;
+    color: var(--dify-prototype-muted);
+    font-size: 13px;
+}
+
+.dify-sync-modal .mapping-pagination button {
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+    min-height: 30px;
+    padding: 0;
+}
+
+.dify-sync-modal.confirm-modal {
+    box-sizing: border-box;
+    width: min(28rem, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+    min-width: 0;
+    padding: 0;
+    overflow: hidden;
+    overflow-x: hidden;
+}
+
+.dify-sync-modal.confirm-modal .modal-head {
+    align-items: center;
+    padding: 18px 64px 18px 18px;
+}
+
+.dify-sync-modal.confirm-modal .modal-title-line h2 {
+    margin: 0;
+    color: var(--text-normal);
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0;
+}
+
+.dify-sync-modal.confirm-modal .modal-head > button.icon {
+    flex: 0 0 auto;
+}
+
+.dify-sync-modal.confirm-modal .confirm-body {
+    min-width: 0;
+    padding: 0 18px;
+}
+
+.dify-sync-modal.confirm-modal .confirm-mapping {
+    display: grid;
+    gap: 0;
+    min-width: 0;
+    margin-top: 0.75rem;
+    padding: 0;
+    border: 1px solid var(--dify-prototype-border);
+    border-radius: 0.5rem;
+    background: var(--background-secondary);
+    overflow-x: hidden;
+}
+
+.dify-sync-modal.confirm-modal .confirm-mapping-item {
+    display: grid;
+    grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+    min-width: 0;
+    padding: 0.75rem;
+}
+
+.dify-sync-modal.confirm-modal .confirm-mapping-item + .confirm-mapping-item {
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.dify-sync-modal.confirm-modal .confirm-mapping-label {
+    min-width: 0;
+    color: var(--text-normal);
+    font-weight: 700;
+    line-height: 1.45;
+}
+
+.dify-sync-modal.confirm-modal .confirm-mapping-value {
+    min-width: 0;
+    color: var(--text-muted);
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+    text-align: right;
+}
+
+.dify-sync-modal.confirm-modal .modal-actions {
+    padding: 10px 18px 18px;
+}
+
+.dify-sync-settings .danger,
+.dify-sync-modal .danger {
+    border-color: rgba(255, 107, 107, 0.48);
+    color: var(--text-error);
+}
+
+.dify-sync-settings .toast-region {
+    position: fixed;
+    right: 1rem;
+    bottom: 2.5rem;
+    z-index: 80;
+}
+
+/* Typography override: normalize dense settings copy while heading rules opt back into heavier weights. */
+.dify-sync-settings :where(
+    .metric-label,
+    .metric-value,
+    .setting-label,
+    .advanced-field label,
+    .status-line,
+    .status-line strong,
+    .callout,
+    .callout strong,
+    .mapping-header,
+    .mapping-row,
+    .folder-name,
+    .tag,
+    .mapping-status-label,
+    .diagnostic-fold summary,
+    .diagnostic-body,
+    .dify-sync-diagnostic-line
+) {
+    font-size: var(--dify-body-font-size) !important;
+    font-weight: 400 !important;
+}
+
+.toast-region {
+    pointer-events: none;
+}
+
+@container (min-width: 680px) {
+    .dify-sync-settings .sync-summary {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@container (max-width: 520px) {
+    .dify-sync-settings .topbar,
+    .dify-sync-settings .section-head,
+    .dify-sync-modal .pending-mapping-head {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .dify-sync-settings .native-setting-row.setting-row,
+    .dify-sync-settings .advanced-connection,
+    .dify-sync-settings #advanced-sync,
+    .dify-sync-modal .mapping-builder,
+    .dify-sync-modal .dataset-select-row {
+        grid-template-columns: 1fr;
+    }
+
+    .dify-sync-modal .mapping-arrow {
+        display: none;
+    }
+
+    .dify-sync-settings .connection-action-buttons,
+    .dify-sync-settings .sync-actions,
+    .dify-sync-modal .modal-actions {
+        justify-content: stretch;
+    }
+}
+
+/* Layout shell: fit the restored UI inside Obsidian's native settings pane. */
+.dify-sync-settings {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+    container-type: inline-size;
+}
+
+/* Obsidian shell scrollbar workaround: hide the outer native settings scrollbar while preserving plugin scroll behavior. */
+.dify-sync-outer-scroll-host {
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.dify-sync-inner-scroll-host {
+    overscroll-behavior: contain;
+}
+
+.dify-sync-outer-scroll-host::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    display: none !important;
+}
+
+.dify-sync-settings .app {
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 100%;
+    overflow-x: clip;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.45;
+    letter-spacing: 0;
+}
+
+.dify-sync-settings .main {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    padding: 24px clamp(16px, 4cqw, 32px) 56px;
+    overflow-x: clip;
+    background: var(--bg);
+}
+
+.dify-sync-settings .settings {
+    width: 100%;
+    max-width: 1120px;
+    min-width: 0;
+    margin: 0 auto;
+}
+
+.dify-sync-settings .app h1 {
+    font-size: 22px;
+    font-weight: 680;
+}
+
+.dify-sync-settings .app h2 {
+    font-size: 18px;
+    font-weight: 680;
+}
+
+.dify-sync-settings .app .metric-value {
+    font-size: 22px !important;
+    font-weight: 720 !important;
+}
+
+.dify-sync-settings .app .section-card,
+.dify-sync-settings .app .metric {
+    border-color: var(--border);
+    border-radius: 8px;
+    background: var(--panel);
+}
+
+.dify-sync-modal .dropdown-trigger:hover {
+    border-color: var(--border-hover);
+    background: var(--panel-2);
+    color: var(--text);
+}
+
+.dify-sync-modal input,
+.dify-sync-modal select,
+.dify-sync-modal textarea,
+.dify-sync-modal .dropdown-trigger {
+    min-height: 36px;
+    border-color: var(--border);
+    border-radius: 8px;
+    background: var(--field);
+    color: var(--text);
+    line-height: 1.45;
+}
+
+.dify-sync-settings .app .github-link,
+.dify-sync-settings .app .language-button,
+.dify-sync-settings .app .help-button {
+    width: 2rem;
+    height: 2rem;
+    min-height: 2rem;
+}
+
+.dify-sync-settings .app .sync-summary {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-bottom: 14px;
+}
+
+.dify-sync-modal .mapping-panel .dropdown-menu {
+    height: 440px;
+    max-height: min(440px, calc(100vh - 220px));
+}
+
+.modal.dify-sync-modal-shell.confirm-modal-shell,
+.dify-sync-modal.confirm-modal {
+    width: min(560px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+}
+
+@container (max-width: 720px) {
+    .dify-sync-settings .main {
+        padding: 20px 16px 64px;
+    }
+
+    .dify-sync-settings .app .sync-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dify-sync-settings .app .setting-row,
+    .dify-sync-settings .app .advanced-field,
+    .dify-sync-settings .app #advanced-sync {
+        grid-template-columns: 1fr;
+    }
+}
