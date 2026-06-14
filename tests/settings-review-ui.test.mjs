@@ -520,7 +520,7 @@ test("connection failures use localized short copy, unified notices, and red err
 		"connectionErrorUnexpectedResponse: 'The current address did not return the Dify knowledge base API. Check that the URL and port point to Dify.'",
 		"getConnectionFailureMessage(reason: ConnectionErrorReason = 'unknown')",
 		"showConnectionError(error?: unknown)",
-		"notice.noticeEl?.addClass('dify-sync-error-notice')",
+		"notice.messageEl.addClass('dify-sync-error-notice')",
 		"throw new DifyApiError(",
 		"probe.statusCode",
 		"probe.reason || 'unknown'",

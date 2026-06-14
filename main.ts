@@ -1,7 +1,6 @@
 import {
 	App,
 	ButtonComponent,
-	DropdownComponent,
 	ExtraButtonComponent,
 	Menu,
 	Modal,
@@ -13,7 +12,6 @@ import {
 	TAbstractFile,
 	TFile,
 	TFolder,
-	TextComponent,
 	ToggleComponent,
 } from 'obsidian';
 import type {
@@ -53,7 +51,6 @@ import {
 	parseJson,
 	removeMappingById,
 	sanitizeBaseUrl,
-	splitIds,
 	uniqueStrings,
 } from './src/utils/path';
 import {
@@ -725,7 +722,7 @@ export default class DifySyncPlugin extends Plugin {
 		const notice = new Notice(this.t('connectionFailed', {
 			message: this.getConnectionFailureMessage(reason),
 		}), 8000);
-		notice.noticeEl?.addClass('dify-sync-error-notice');
+		notice.messageEl.addClass('dify-sync-error-notice');
 	}
 
 	getConnectionFailureReason(error?: unknown): ConnectionErrorReason {
@@ -1434,14 +1431,11 @@ export default class DifySyncPlugin extends Plugin {
 	showPersistentNotice(message: string) {
 		if (!this.syncProgressNotice) {
 			this.syncProgressNotice = new Notice(message, 0);
-			this.syncProgressNotice.noticeEl?.addClass('dify-sync-progress');
+			this.syncProgressNotice.messageEl.addClass('dify-sync-progress');
 			return;
 		}
 
-		const textElement = this.syncProgressNotice.noticeEl?.querySelector('.notice-text');
-		if (textElement) {
-			textElement.textContent = message;
-		}
+		this.syncProgressNotice.messageEl.textContent = message;
 	}
 
 	showSyncComplete(stats: SyncStats) {
@@ -1450,13 +1444,13 @@ export default class DifySyncPlugin extends Plugin {
 			? this.t('syncNoChanges')
 			: this.t('syncComplete', syncStatsVars(stats));
 		const notice = new Notice(message, 5000);
-		notice.noticeEl?.addClass('dify-sync-complete');
+		notice.messageEl.addClass('dify-sync-complete');
 	}
 
 	showSyncError(message: string) {
 		this.hideProgressNotice();
 		const notice = new Notice(message, 8000);
-		notice.noticeEl?.addClass('dify-sync-error-notice');
+		notice.messageEl.addClass('dify-sync-error-notice');
 	}
 
 	hideProgressNotice() {
@@ -1838,12 +1832,10 @@ class DifySyncSettingTab extends PluginSettingTab {
 		const pagination = containerEl.createDiv({ cls: 'main-mapping-pagination mapping-pagination', attr: { 'data-role': 'main-mapping-pagination' } });
 		const totalPages = Math.max(1, Math.ceil(count / this.mainMappingPageSize));
 		const previousButton = new ButtonComponent(pagination).setButtonText('‹');
-		const previous = previousButton.buttonEl;
 		const start = count === 0 ? 0 : this.mainMappingPage * this.mainMappingPageSize + 1;
 		const end = count === 0 ? 0 : Math.min(count, (this.mainMappingPage + 1) * this.mainMappingPageSize);
 		pagination.createSpan({ text: count === 0 ? this.plugin.t('mappingPageInfoEmpty') : `${start}-${end} / ${count}`, attr: { 'data-role': 'main-mapping-page-info' } });
 		const nextButton = new ButtonComponent(pagination).setButtonText('›');
-		const next = nextButton.buttonEl;
 		previousButton.setDisabled(count === 0 || this.mainMappingPage === 0);
 		nextButton.setDisabled(count === 0 || this.mainMappingPage >= totalPages - 1);
 		previousButton.onClick(() => {
