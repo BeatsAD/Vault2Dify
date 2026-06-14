@@ -122,13 +122,6 @@ export interface RecentSyncResult {
 	error?: string;
 }
 
-export interface PluginDataShape {
-	settings?: DifySyncSettings;
-	syncRecords?: Record<string, SyncRecord>;
-	schemaVersion?: number;
-	[key: string]: unknown;
-}
-
 export interface DifyDataset {
 	id: string;
 	name?: string;
@@ -142,7 +135,7 @@ export interface DifyDocument {
 }
 
 export interface DifyMutationResponse {
-	document?: DifyDocument;
+	['document']?: DifyDocument;
 	data?: DifyDocument;
 	batch?: string;
 	[key: string]: unknown;

@@ -28,7 +28,7 @@ export function pathMatchesFolder(filePath: string, folder: string): boolean {
 	return filePath === normalizedFolder || filePath.startsWith(`${normalizedFolder}/`);
 }
 
-export function parseJson(text: string): any {
+export function parseJson(text: string): unknown {
 	if (!text) {
 		return {};
 	}
@@ -37,6 +37,20 @@ export function parseJson(text: string): any {
 	} catch {
 		return {};
 	}
+}
+
+export function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+export function getStringProperty(value: Record<string, unknown>, key: string): string | undefined {
+	const property = value[key];
+	return typeof property === 'string' ? property : undefined;
+}
+
+export function getNumberProperty(value: Record<string, unknown>, key: string): number | undefined {
+	const property = value[key];
+	return typeof property === 'number' ? property : undefined;
 }
 
 export function uniqueStrings(values: string[]): string[] {

@@ -27,7 +27,6 @@ import type {
 	FolderMapping,
 	KnowledgeBaseInfo,
 	Language,
-	PluginDataShape,
 	RecentSyncResult,
 	SyncRecord,
 	SyncSource,
@@ -46,7 +45,10 @@ import {
 } from './src/api/DifyApiClient';
 import {
 	clampNumber,
+	getNumberProperty,
+	getStringProperty,
 	getDatasetIdsForPathFromMappings,
+	isRecord,
 	normalizeFolderPath,
 	parseJson,
 	removeMappingById,
@@ -147,7 +149,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
 		helpDebugTitle: '调试日志',
 		helpDebugBody: '遇到通用连接失败、浏览器访问正常但插件仍失败、NAS / Docker / 反向代理链路复杂，或需要反馈问题给开发者时，建议临时开启调试日志。反馈日志时不要公开 API Key、私有地址、笔记内容或其他敏感信息。',
 		helpPrivacyTitle: '隐私与安全',
-		helpPrivacyBody: '插件只读取当前 Obsidian 仓库中命中路径映射的 Markdown 文件，只会把需要同步的 Markdown 内容发送到你配置的 Dify 服务地址，不会把笔记内容发送给插件作者，也不会发送到除你配置的 Dify 服务以外的第三方服务。Dify API Key 保存在 Obsidian 插件本地数据中，请不要把包含插件配置的 .obsidian 目录提交到公开仓库。',
+		helpPrivacyBody: '插件只读取当前 Obsidian 仓库中命中路径映射的 Markdown 文件，只会把需要同步的 Markdown 内容发送到你配置的 Dify 服务地址，不会把笔记内容发送给插件作者，也不会发送到除你配置的 Dify 服务以外的第三方服务。Dify API Key 保存在 Obsidian 插件本地数据中，请不要把包含插件配置的 {configDir} 目录提交到公开仓库。',
 		navAria: 'Obsidian 设置导航',
 		navAbout: '关于',
 		navEditor: '编辑器',
@@ -412,7 +414,7 @@ const STRINGS: Record<Language, Record<string, string>> = {
 		helpDebugTitle: 'Debug logs',
 		helpDebugBody: 'Temporarily enable debug logs when the error stays generic, browser access works but the plugin still fails, NAS / Docker / reverse proxy routing is complex, or you need to report an issue. Do not share API keys, private addresses, note content, or other sensitive information in logs.',
 		helpPrivacyTitle: 'Privacy and safety',
-		helpPrivacyBody: 'The plugin only reads Markdown files in the current Obsidian vault that match enabled path mappings. It only sends required Markdown content to your configured Dify service URL. It does not send note content to the plugin author or any third-party service other than your configured Dify service. The Dify API key is stored in Obsidian plugin local data; do not commit an .obsidian directory containing plugin settings to a public repository.',
+		helpPrivacyBody: 'The plugin only reads Markdown files in the current Obsidian vault that match enabled path mappings. It only sends required Markdown content to your configured Dify service URL. It does not send note content to the plugin author or any third-party service other than your configured Dify service. The Dify API key is stored in Obsidian plugin local data; do not commit a {configDir} directory containing plugin settings to a public repository.',
 		navAria: 'Obsidian settings navigation',
 		navAbout: 'About',
 		navEditor: 'Editor',
@@ -730,9 +732,9 @@ export default class DifySyncPlugin extends Plugin {
 		if (!this.hasCompleteConnectionSettings()) {
 			return 'missing_config';
 		}
-		const anyError = error as any;
-		if (isConnectionErrorReason(anyError?.reason)) {
-			return anyError.reason;
+		const errorReason = getReasonProperty(error);
+		if (errorReason) {
+			return errorReason;
 		}
 		if (error instanceof DifyApiError) {
 			return classifyConnectionApiError(error);
@@ -748,10 +750,11 @@ export default class DifySyncPlugin extends Plugin {
 	}
 
 	async loadPluginData() {
-		const raw = (await this.loadData()) as PluginDataShape | null;
-		const rawSettings = raw?.settings ? raw.settings : raw || {};
+		const raw: unknown = await this.loadData();
+		const rawRecord = isRecord(raw) ? raw : {};
+		const rawSettings = isRecord(rawRecord.settings) ? rawRecord.settings : rawRecord;
 		this.settings = this.normalizeSettings(rawSettings, !!raw);
-		this.syncRecords = new Map(Object.entries(raw?.syncRecords || {}) as [string, SyncRecord][]);
+		this.syncRecords = new Map(Object.entries(getSyncRecords(rawRecord.syncRecords)));
 		await this.savePluginData();
 	}
 
@@ -768,11 +771,12 @@ export default class DifySyncPlugin extends Plugin {
 		});
 	}
 
-	normalizeSettings(rawSettings: any, hasPersistedPluginData = false): DifySyncSettings {
-		const merged: DifySyncSettings = Object.assign({}, DEFAULT_SETTINGS, rawSettings || {});
+	normalizeSettings(rawSettings: unknown, hasPersistedPluginData = false): DifySyncSettings {
+		const rawRecord = isRecord(rawSettings) ? rawSettings : {};
+		const merged: DifySyncSettings = Object.assign({}, DEFAULT_SETTINGS, rawRecord);
 		merged.schemaVersion = 2;
-		merged.initialSetupCompleted = typeof rawSettings?.initialSetupCompleted === 'boolean'
-			? rawSettings.initialSetupCompleted
+		merged.initialSetupCompleted = typeof rawRecord.initialSetupCompleted === 'boolean'
+			? rawRecord.initialSetupCompleted
 			: hasPersistedPluginData;
 		merged.language = merged.language === 'en' ? 'en' : 'zh-CN';
 		merged.endpointMode = ['primary', 'lan', 'public', 'auto'].includes(merged.endpointMode) ? merged.endpointMode : 'primary';
@@ -785,7 +789,7 @@ export default class DifySyncPlugin extends Plugin {
 		merged.knowledgeBases = Array.isArray(merged.knowledgeBases) ? merged.knowledgeBases : [];
 		merged.obsidianFolders = Array.isArray(merged.obsidianFolders) ? merged.obsidianFolders : [];
 		merged.mappings = Array.isArray(merged.mappings) ? merged.mappings : [];
-		merged.connectionHealth = normalizeConnectionHealth((merged as any).connectionHealth);
+		merged.connectionHealth = normalizeConnectionHealth(rawRecord.connectionHealth);
 
 		if (merged.mappings.length === 0 && merged.difyKnowledgeId) {
 			const folders = merged.obsidianFolders.length > 0 ? merged.obsidianFolders : [''];
@@ -872,11 +876,15 @@ export default class DifySyncPlugin extends Plugin {
 			window.clearTimeout(this.queueTimer);
 		}
 
-		this.queueTimer = window.setTimeout(async () => {
+		this.queueTimer = window.setTimeout(() => {
 			this.queueTimer = null;
 			const paths = fullSync ? undefined : Array.from(this.pendingPaths);
 			this.pendingPaths.clear();
-			await this.performSync(source, paths);
+			void this.performSync(source, paths).catch((error) => {
+				const message = this.getConnectionFailureMessage(this.getConnectionFailureReason(error));
+				this.updateStatusBar(this.t('syncFailedShort'), true);
+				this.showSyncError(this.t('syncFailed', { message }));
+			});
 		}, this.settings.debounceSeconds * 1000);
 	}
 
@@ -952,7 +960,11 @@ export default class DifySyncPlugin extends Plugin {
 				const paths = Array.from(this.pendingPaths);
 				this.pendingPaths.clear();
 				window.setTimeout(() => {
-					this.performSync('event', paths);
+					void this.performSync('event', paths).catch((error) => {
+						const message = this.getConnectionFailureMessage(this.getConnectionFailureReason(error));
+						this.updateStatusBar(this.t('syncFailedShort'), true);
+						this.showSyncError(this.t('syncFailed', { message }));
+					});
 				}, 1000);
 			}
 		}
@@ -1104,8 +1116,8 @@ export default class DifySyncPlugin extends Plugin {
 			response = await this.client.createDocumentByText(task.datasetId, task.remoteName, task.content);
 		}
 
-		const document = response.document || response.data || existingDocument;
-		const documentId = document?.id || existingDocument?.id || oldRecord?.documentId;
+		const responseDocument = getDifyMutationDocument(response);
+		const documentId = responseDocument?.id || existingDocument?.id || oldRecord?.documentId;
 
 		if (!documentId) {
 			throw new Error('Dify did not return a document id.');
@@ -1342,20 +1354,20 @@ export default class DifySyncPlugin extends Plugin {
 
 			const content = await this.app.vault.read(hashFile);
 			const legacy = parseJson(content);
-			if (!legacy || typeof legacy !== 'object') {
+			if (!isRecord(legacy)) {
 				return;
 			}
 
 			Object.entries(legacy).forEach(([filePath, value]) => {
-				const hashInfo = value as any;
+				const hashInfo = isRecord(value) ? value : {};
 				const datasetIds = this.getDatasetIdsForPath(filePath);
 				datasetIds.forEach((datasetId) => {
 					this.syncRecords.set(this.getRecordKey(datasetId, filePath), {
 						filePath,
 						datasetId,
 						remoteName: this.makeRemoteName(filePath),
-						hash: hashInfo.hash || '',
-						lastModified: hashInfo.lastModified || 0,
+						hash: getStringProperty(hashInfo, 'hash') || '',
+						lastModified: getNumberProperty(hashInfo, 'lastModified') || 0,
 						lastSyncedAt: new Date().toISOString(),
 					});
 				});
@@ -1404,9 +1416,9 @@ export default class DifySyncPlugin extends Plugin {
 	}
 
 	updateStatusBar(message: string, isError = false) {
-		(this.statusBarItem as any).setText(`Dify: ${message}`);
-		(this.statusBarItem as any).toggleClass('dify-sync-error', isError);
-		(this.statusBarItem as any).toggleClass('dify-sync-syncing', message === this.t('syncing'));
+		this.statusBarItem.setText(`Dify: ${message}`);
+		this.statusBarItem.toggleClass('dify-sync-error', isError);
+		this.statusBarItem.toggleClass('dify-sync-syncing', message === this.t('syncing'));
 	}
 
 	showSyncProgress(message: string, current: number, total: number) {
@@ -1642,12 +1654,14 @@ class DifySyncSettingTab extends PluginSettingTab {
 				item
 					.setTitle(option.label)
 					.setChecked(this.plugin.settings.language === option.value)
-					.onClick(async () => {
+					.onClick(() => {
 						if (this.plugin.settings.language === option.value) return;
-						this.plugin.settings.language = option.value;
-						await this.plugin.savePluginData();
-						this.plugin.updateStatusBar(this.plugin.t('ready'));
-						this.display();
+						void (async () => {
+							this.plugin.settings.language = option.value;
+							await this.plugin.savePluginData();
+							this.plugin.updateStatusBar(this.plugin.t('ready'));
+							this.display();
+						})();
 					});
 			});
 		});
@@ -1692,10 +1706,10 @@ class DifySyncSettingTab extends PluginSettingTab {
 				keyInput = text
 					.setPlaceholder(this.plugin.t('apiKeyPlaceholder'))
 					.setValue(this.plugin.settings.difyApiKey)
-					.onChange(async (value) => {
+					.onChange((value) => {
 						this.plugin.settings.difyApiKey = value.trim();
 						this.plugin.invalidateConnectionState();
-						await this.plugin.savePluginData();
+						void this.plugin.savePluginData();
 					}).inputEl;
 				keyInput.id = 'dify-api-key';
 				keyInput.type = 'password';
@@ -1720,7 +1734,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 				toggle.setAttr('title', this.plugin.t('showApiKey'));
 				toggle.setAttr('aria-controls', 'dify-api-key');
 				toggle.setAttr('aria-pressed', 'false');
-				});
+			});
 
 		this.createNativeSetting(card, 'setting-row')
 			.setName(this.createSettingName(this.plugin.t('apiUrlName'), { required: true }))
@@ -1729,10 +1743,10 @@ class DifySyncSettingTab extends PluginSettingTab {
 				const input = text
 					.setPlaceholder(this.plugin.t('urlPlaceholder'))
 					.setValue(this.plugin.settings.difyApiUrl)
-					.onChange(async (value) => {
+					.onChange((value) => {
 						this.plugin.settings.difyApiUrl = value.trim();
 						this.plugin.invalidateConnectionState();
-						await this.plugin.savePluginData();
+						void this.plugin.savePluginData();
 					}).inputEl;
 				input.setAttr('aria-label', this.plugin.t('apiUrlName'));
 			});
@@ -1746,14 +1760,16 @@ class DifySyncSettingTab extends PluginSettingTab {
 		const clearButton = new ButtonComponent(actions)
 			.setButtonText(this.plugin.t('clearConnectionConfig'))
 			.setClass('native-action-button')
-			.onClick(async () => {
-				this.plugin.settings.difyApiKey = '';
-				this.plugin.settings.difyApiUrl = '';
-				this.plugin.settings.lanApiUrl = '';
-				this.plugin.settings.publicApiUrl = '';
-				this.plugin.invalidateConnectionState();
-				await this.plugin.savePluginData();
-				this.display();
+			.onClick(() => {
+				void (async () => {
+					this.plugin.settings.difyApiKey = '';
+					this.plugin.settings.difyApiUrl = '';
+					this.plugin.settings.lanApiUrl = '';
+					this.plugin.settings.publicApiUrl = '';
+					this.plugin.invalidateConnectionState();
+					await this.plugin.savePluginData();
+					this.display();
+				})();
 			});
 		clearButton.buttonEl.setAttr('data-action', 'clear-connection-config');
 		clearButton.buttonEl.setAttr('aria-label', this.plugin.t('clearConnectionConfig'));
@@ -1761,16 +1777,18 @@ class DifySyncSettingTab extends PluginSettingTab {
 		testButton = new ButtonComponent(actions)
 			.setButtonText(this.plugin.t('testConnection'))
 			.setClass('native-action-button')
-			.onClick(async () => {
+			.onClick(() => {
 				testButton.setDisabled(true);
 				testButton.setButtonText(this.plugin.t('syncing'));
-				try {
-					await this.plugin.testConnection();
-				} finally {
-					testButton.setDisabled(false);
-					testButton.setButtonText(this.plugin.t('testConnection'));
-					this.display();
-				}
+				void (async () => {
+					try {
+						await this.plugin.testConnection();
+					} finally {
+						testButton.setDisabled(false);
+						testButton.setButtonText(this.plugin.t('testConnection'));
+						this.display();
+					}
+				})();
 			});
 		testButton.buttonEl.setAttr('data-action', 'test-connection');
 		testButton.buttonEl.setAttr('aria-label', this.plugin.t('testConnection'));
@@ -1854,32 +1872,33 @@ class DifySyncSettingTab extends PluginSettingTab {
 						await this.plugin.savePluginData();
 						this.display();
 					}).open();
-				}).extraSettingsEl;
-			edit.addClass('icon');
-			edit.setAttr('data-action', 'edit-mapping');
-			edit.setAttr('aria-label', this.plugin.t('edit'));
-			edit.setAttr('title', this.plugin.t('edit'));
-			const remove = new ExtraButtonComponent(actions)
-				.setIcon('trash-2')
-				.setTooltip(this.plugin.t('delete'))
-				.onClick(() => {
-					new ConfirmModal(
-						this.app,
-						this.plugin.t('deleteMappingTitle'),
-						this.plugin.t('deleteMappingDesc'),
-						this.plugin.t('deleteMappingConfirm'),
-						this.plugin.t('cancel'),
-						async () => {
-							this.plugin.settings.mappings = removeMappingById(this.plugin.settings.mappings, mapping.id);
-							await this.plugin.savePluginData();
-							this.display();
-						},
-						{
-							folder: mapping.folder || this.plugin.t('rootFolder'),
-							datasets: mapping.datasetIds.map((id) => this.plugin.getDatasetName(id)).join('、') || this.plugin.t('datasetMissing'),
-						},
-					).open();
-				}).extraSettingsEl;
+					}).extraSettingsEl;
+				edit.addClass('icon');
+				edit.setAttr('data-action', 'edit-mapping');
+				edit.setAttr('aria-label', this.plugin.t('edit'));
+				edit.setAttr('title', this.plugin.t('edit'));
+				const remove = new ExtraButtonComponent(actions)
+					.setIcon('trash-2')
+					.setTooltip(this.plugin.t('delete'))
+					.onClick(() => {
+						new ConfirmModal(
+							this.app,
+							this.plugin.t('deleteMappingTitle'),
+							this.plugin.t('deleteMappingDesc'),
+							this.plugin.t('deleteMappingConfirm'),
+							this.plugin.t('cancel'),
+							async () => {
+								this.plugin.settings.mappings = removeMappingById(this.plugin.settings.mappings, mapping.id);
+								await this.plugin.savePluginData();
+								this.display();
+							},
+							{
+								folder: mapping.folder || this.plugin.t('rootFolder'),
+								datasets: mapping.datasetIds.map((id) => this.plugin.getDatasetName(id)).join('、') || this.plugin.t('datasetMissing'),
+							},
+							(key) => this.plugin.t(key),
+						).open();
+					}).extraSettingsEl;
 			remove.addClass('icon');
 			remove.addClass('danger');
 			remove.setAttr('data-action', 'delete-mapping');
@@ -1893,14 +1912,16 @@ class DifySyncSettingTab extends PluginSettingTab {
 		this.createNativeSetting(card, 'setting-row', 'switch-row')
 			.setName(this.createSettingName(this.plugin.t('sectionAuto')))
 			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.autoSyncEnabled)
-					.onChange(async (value) => {
-						this.plugin.settings.autoSyncEnabled = value;
-						await this.plugin.savePluginData();
-						this.plugin.setupAutoSync();
-						this.display();
-					});
+					toggle
+						.setValue(this.plugin.settings.autoSyncEnabled)
+						.onChange((value) => {
+							void (async () => {
+								this.plugin.settings.autoSyncEnabled = value;
+								await this.plugin.savePluginData();
+								this.plugin.setupAutoSync();
+								this.display();
+							})();
+						});
 				toggle.toggleEl.setAttr('data-action', 'toggle-auto-sync');
 			});
 		const advanced = card.createDiv({ attr: { id: 'advanced-sync' } });
@@ -1950,19 +1971,23 @@ class DifySyncSettingTab extends PluginSettingTab {
 		const diagnosticActions = body.createDiv('sync-actions');
 		const debugButton = new ButtonComponent(diagnosticActions)
 			.setButtonText(this.plugin.settings.debugLogging ? `${this.plugin.t('debugName')} · ${this.plugin.t('enabled')}` : this.plugin.t('debugName'))
-			.onClick(async () => {
-				this.plugin.settings.debugLogging = !this.plugin.settings.debugLogging;
-				await this.plugin.savePluginData();
-				this.display();
+			.onClick(() => {
+				void (async () => {
+					this.plugin.settings.debugLogging = !this.plugin.settings.debugLogging;
+					await this.plugin.savePluginData();
+					this.display();
+				})();
 			});
 		debugButton.buttonEl.setAttr('data-action', 'toggle-debug-logging');
 		const resetButton = new ButtonComponent(diagnosticActions)
 			.setButtonText(this.plugin.t('resetRecords'))
-			.onClick(async () => {
-				this.plugin.syncRecords.clear();
-				await this.plugin.savePluginData();
-				new Notice(this.plugin.t('resetRecordsDone'));
-				this.display();
+			.onClick(() => {
+				void (async () => {
+					this.plugin.syncRecords.clear();
+					await this.plugin.savePluginData();
+					new Notice(this.plugin.t('resetRecordsDone'));
+					this.display();
+				})();
 			});
 		resetButton.buttonEl.setAttr('data-action', 'reset-sync-records');
 		const syncActions = card.createDiv('sync-actions manual-sync-actions');
@@ -1970,13 +1995,18 @@ class DifySyncSettingTab extends PluginSettingTab {
 		syncNow = new ButtonComponent(syncActions)
 			.setButtonText(this.plugin.t('manualSync'))
 			.setCta()
-			.onClick(async () => {
+			.onClick(() => {
 				syncNow.setDisabled(true);
 				syncNow.setButtonText(this.plugin.t('syncing'));
-				await this.plugin.performSync('manual');
-				syncNow.setDisabled(false);
-				syncNow.setButtonText(this.plugin.t('manualSync'));
-				this.display();
+				void (async () => {
+					try {
+						await this.plugin.performSync('manual');
+					} finally {
+						syncNow.setDisabled(false);
+						syncNow.setButtonText(this.plugin.t('manualSync'));
+						this.display();
+					}
+				})();
 			});
 		syncNow.buttonEl.setAttr('data-action', 'sync-now');
 		syncNow.buttonEl.setAttr('aria-label', this.plugin.t('manualSync'));
@@ -2021,13 +2051,14 @@ class DifySyncSettingTab extends PluginSettingTab {
 	}
 
 	private createSettingName(label: string, options: { required?: boolean; optional?: boolean } = {}): DocumentFragment {
-		const fragment = document.createDocumentFragment();
-		const labelEl = document.createElement('span');
+		const ownerDocument = this.containerEl.doc;
+		const fragment = ownerDocument.createDocumentFragment();
+		const labelEl = ownerDocument.createElement('span');
 		labelEl.className = 'setting-label';
 		labelEl.textContent = label;
 		fragment.appendChild(labelEl);
 		if (options.required) {
-			const required = document.createElement('span');
+			const required = ownerDocument.createElement('span');
 			required.className = 'required-marker';
 			required.textContent = '*';
 			required.setAttribute('aria-label', 'required');
@@ -2045,7 +2076,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 	}
 
 	private createTextInput(container: HTMLElement, label: string, placeholder: string, value: string): HTMLInputElement {
-		const input = container.createEl('input', { attr: { type: 'text', placeholder, 'aria-label': label } }) as HTMLInputElement;
+		const input = container.createEl('input', { attr: { type: 'text', placeholder, 'aria-label': label } });
 		input.value = value;
 		return input;
 	}
@@ -2057,7 +2088,9 @@ class DifySyncSettingTab extends PluginSettingTab {
 				const input = text
 					.setPlaceholder(placeholder)
 					.setValue(value)
-					.onChange(async (nextValue) => onChange(nextValue.trim())).inputEl;
+					.onChange((nextValue) => {
+						void onChange(nextValue.trim());
+					}).inputEl;
 				input.id = id;
 			});
 	}
@@ -2065,9 +2098,13 @@ class DifySyncSettingTab extends PluginSettingTab {
 	private createAdvancedNumber(container: HTMLElement, label: string, value: number, min: number, max: number, onChange: (value: number) => Promise<void>, id: string) {
 		const field = container.createDiv('advanced-field');
 		field.createEl('label', { text: label, attr: { for: id } });
-		const input = field.createEl('input', { attr: { id, type: 'number', min: String(min), max: String(max) } }) as HTMLInputElement;
+		const input = field.createEl('input', { attr: { id, type: 'number', min: String(min), max: String(max) } });
 		input.value = String(value);
-		input.addEventListener('change', async () => onChange(Number(input.value)));
+		input.addEventListener('change', () => {
+			void onChange(Number(input.value)).catch((error) => {
+				new Notice(getErrorMessage(error));
+			});
+		});
 	}
 
 	private createAdvancedSelect<T extends string | number | boolean>(container: HTMLElement, label: string, value: T, options: Array<[T, string]>, onChange: (value: T) => Promise<void>, selectId: string) {
@@ -2079,10 +2116,10 @@ class DifySyncSettingTab extends PluginSettingTab {
 				dropdown
 					.addOptions(dropdownOptions)
 					.setValue(String(value))
-					.onChange(async (nextValue) => {
+					.onChange((nextValue) => {
 						const typedValue = valueByKey.get(nextValue);
 						if (typedValue === undefined) return;
-						await onChange(typedValue);
+						void onChange(typedValue);
 					});
 				dropdown.selectEl.id = `${selectId}-select`;
 				dropdown.selectEl.setAttr('aria-label', label);
@@ -2198,18 +2235,18 @@ class HelpModal extends Modal {
 		const sectionEl = containerEl.createEl('section', { cls: 'help-section' });
 		sectionEl.createEl('h3', { text: this.plugin.t(section.titleKey) });
 		(section.paragraphKeys || []).forEach((key) => {
-			this.splitHelpLines(this.plugin.t(key)).forEach((line) => {
+			this.splitHelpLines(this.plugin.t(key, { configDir: this.app.vault.configDir })).forEach((line) => {
 				sectionEl.createEl('p', { text: line });
 			});
 		});
 		(section.orderedListKeys || []).forEach((key) => {
-			this.renderHelpList(sectionEl, this.splitHelpLines(this.plugin.t(key)), true);
+			this.renderHelpList(sectionEl, this.splitHelpLines(this.plugin.t(key, { configDir: this.app.vault.configDir })), true);
 		});
 		(section.listKeys || []).forEach((key) => {
-			this.renderHelpList(sectionEl, this.splitHelpLines(this.plugin.t(key)), false);
+			this.renderHelpList(sectionEl, this.splitHelpLines(this.plugin.t(key, { configDir: this.app.vault.configDir })), false);
 		});
 		(section.errorListKeys || []).forEach((key) => {
-			this.renderHelpErrorList(sectionEl, this.splitHelpLines(this.plugin.t(key)));
+			this.renderHelpErrorList(sectionEl, this.splitHelpLines(this.plugin.t(key, { configDir: this.app.vault.configDir })));
 		});
 	}
 
@@ -2244,8 +2281,9 @@ class ConfirmModal extends Modal {
 	private cancelText: string;
 	private onConfirm: () => Promise<void>;
 	private preview?: { folder: string; datasets: string };
+	private labelProvider: (key: string) => string;
 
-	constructor(app: App, title: string, message: string, confirmText: string, cancelText: string, onConfirm: () => Promise<void>, preview?: { folder: string; datasets: string }) {
+	constructor(app: App, title: string, message: string, confirmText: string, cancelText: string, onConfirm: () => Promise<void>, preview?: { folder: string; datasets: string }, labelProvider: (key: string) => string = (key) => key) {
 		super(app);
 		this.title = title;
 		this.message = message;
@@ -2253,6 +2291,7 @@ class ConfirmModal extends Modal {
 		this.cancelText = cancelText;
 		this.onConfirm = onConfirm;
 		this.preview = preview;
+		this.labelProvider = labelProvider;
 	}
 
 	onOpen() {
@@ -2281,15 +2320,17 @@ class ConfirmModal extends Modal {
 		const confirm = new ButtonComponent(actions)
 			.setButtonText(this.confirmText)
 			.setWarning()
-			.onClick(async () => {
-				await this.onConfirm();
-				this.close();
+			.onClick(() => {
+				void (async () => {
+					await this.onConfirm();
+					this.close();
+				})();
 			});
 		confirm.buttonEl.setAttr('data-action', 'confirm-delete');
 	}
 
 	private pluginLabel(key: string): string {
-		return ((this.app as any).plugins?.plugins?.['vault-to-dify'] as DifySyncPlugin | undefined)?.t(key) || key;
+		return this.labelProvider(key);
 	}
 }
 
@@ -2361,21 +2402,25 @@ class MappingEditorModal extends Modal {
 		cancel.buttonEl.setAttr('data-action', 'close-modal');
 		const refresh = new ButtonComponent(actions)
 			.setButtonText(this.plugin.t('refreshDatasets'))
-			.onClick(async () => {
-				try {
-					await this.plugin.refreshKnowledgeBases();
-					this.renderDatasetChoices();
-					new Notice(this.plugin.t('datasetsRefreshed', { count: this.plugin.settings.knowledgeBases.length }));
-				} catch (error) {
-					this.plugin.showConnectionError(error);
-				}
+			.onClick(() => {
+				void (async () => {
+					try {
+						await this.plugin.refreshKnowledgeBases();
+						this.renderDatasetChoices();
+						new Notice(this.plugin.t('datasetsRefreshed', { count: this.plugin.settings.knowledgeBases.length }));
+					} catch (error) {
+						this.plugin.showConnectionError(error);
+					}
+				})();
 			});
 		refresh.buttonEl.setAttr('data-action', 'refresh-modal-datasets');
 		refresh.buttonEl.setAttr('aria-label', this.plugin.t('refreshDatasets'));
 		const save = new ButtonComponent(actions)
 			.setButtonText(this.plugin.t('saveMapping'))
 			.setCta()
-			.onClick(async () => this.savePendingMappings());
+			.onClick(() => {
+				void this.savePendingMappings();
+			});
 		save.buttonEl.setAttr('data-action', 'save-mapping');
 
 		if (this.isEditing) {
@@ -2390,18 +2435,18 @@ class MappingEditorModal extends Modal {
 	}
 
 	private renderFolderPanel(builder: HTMLElement) {
-		const panel = builder.createDiv('mapping-panel');
-		const labelLine = panel.createDiv('label-line');
-		labelLine.createEl('label', { text: this.plugin.t('folderName'), attr: { id: 'modal-folder-label' } });
-		this.folderInputEl = panel.createEl('input', { attr: { id: 'modal-folder', type: 'hidden', value: '' } }) as HTMLInputElement;
+			const panel = builder.createDiv('mapping-panel');
+			const labelLine = panel.createDiv('label-line');
+			labelLine.createEl('label', { text: this.plugin.t('folderName'), attr: { id: 'modal-folder-label' } });
+			this.folderInputEl = panel.createEl('input', { attr: { id: 'modal-folder', type: 'hidden', value: '' } });
 		const box = panel.createDiv('dropdown-box');
 		box.addEventListener('click', (event) => event.stopPropagation());
 		const trigger = box.createEl('button', { cls: 'dropdown-trigger', attr: { type: 'button', 'aria-expanded': 'false', 'aria-controls': 'folder-dropdown-menu', 'data-action': 'toggle-folder-dropdown' } });
 		this.folderSummaryEl = trigger.createSpan({ text: this.plugin.t('selectFolderPlaceholder'), attr: { 'data-role': 'folder-summary' } });
-		setIcon(trigger.createSpan({ cls: 'dropdown-caret', attr: { 'aria-hidden': 'true' } }), 'chevron-down');
-		const menu = box.createDiv({ cls: 'dropdown-menu', attr: { id: 'folder-dropdown-menu' } });
-		menu.hidden = true;
-		const search = menu.createEl('input', { cls: 'folder-search', attr: { type: 'search', placeholder: this.plugin.t('folderSearch'), 'aria-label': this.plugin.t('folderSearch') } }) as HTMLInputElement;
+			setIcon(trigger.createSpan({ cls: 'dropdown-caret', attr: { 'aria-hidden': 'true' } }), 'chevron-down');
+			const menu = box.createDiv({ cls: 'dropdown-menu', attr: { id: 'folder-dropdown-menu' } });
+			menu.hidden = true;
+			const search = menu.createEl('input', { cls: 'folder-search', attr: { type: 'search', placeholder: this.plugin.t('folderSearch'), 'aria-label': this.plugin.t('folderSearch') } });
 		this.folderTreeEl = menu.createDiv({ cls: 'folder-tree dify-sync-obsidian-folder-tree', attr: { role: 'tree', 'aria-labelledby': 'modal-folder-label' } });
 		this.renderFolderTree();
 		trigger.addEventListener('click', () => this.toggleMenu(trigger, menu));
@@ -2412,10 +2457,10 @@ class MappingEditorModal extends Modal {
 	}
 
 	private renderDatasetPanel(builder: HTMLElement) {
-		const panel = builder.createDiv('mapping-panel');
-		const labelLine = panel.createDiv('label-line');
-		labelLine.createEl('label', { text: this.plugin.t('datasetName'), attr: { id: 'modal-dataset-label' } });
-		this.datasetInputEl = panel.createEl('input', { attr: { id: 'modal-dataset', type: 'hidden', value: '', 'data-dataset-id': '' } }) as HTMLInputElement;
+			const panel = builder.createDiv('mapping-panel');
+			const labelLine = panel.createDiv('label-line');
+			labelLine.createEl('label', { text: this.plugin.t('datasetName'), attr: { id: 'modal-dataset-label' } });
+			this.datasetInputEl = panel.createEl('input', { attr: { id: 'modal-dataset', type: 'hidden', value: '', 'data-dataset-id': '' } });
 		const row = panel.createDiv('dataset-select-row');
 		const box = row.createDiv('dropdown-box');
 		box.addEventListener('click', (event) => event.stopPropagation());
@@ -2602,8 +2647,8 @@ class MappingEditorModal extends Modal {
 		if (event.key === 'Escape') {
 			event.preventDefault();
 			const box = this.folderSummaryEl.closest('.dropdown-box');
-			box?.querySelector<HTMLElement>('.dropdown-menu')?.setAttr('hidden', 'true');
-			box?.querySelector<HTMLElement>('.dropdown-trigger')?.setAttr('aria-expanded', 'false');
+			box?.querySelector('.dropdown-menu')?.setAttr('hidden', 'true');
+			box?.querySelector('.dropdown-trigger')?.setAttr('aria-expanded', 'false');
 		}
 	}
 
@@ -2629,7 +2674,7 @@ class MappingEditorModal extends Modal {
 					'data-dataset': dataset.name || dataset.id,
 					'data-dataset-id': dataset.id,
 				},
-			}) as HTMLInputElement;
+			});
 			checkbox.checked = this.selectedDatasets.has(dataset.id);
 			const checkmark = label.createSpan({ cls: 'dataset-checkmark', attr: { 'aria-hidden': 'true' } });
 			setIcon(checkmark, 'check');
@@ -2719,14 +2764,16 @@ class MappingEditorModal extends Modal {
 				const refresh = new ExtraButtonComponent(actions)
 					.setIcon('refresh-cw')
 					.setTooltip(this.plugin.t('refreshDatasets'))
-					.onClick(async () => {
-						try {
-							await this.plugin.refreshKnowledgeBases();
-							this.renderDatasetChoices();
-							new Notice(this.plugin.t('datasetsRefreshed', { count: this.plugin.settings.knowledgeBases.length }));
-						} catch (error) {
-							this.plugin.showConnectionError(error);
-						}
+					.onClick(() => {
+						void (async () => {
+							try {
+								await this.plugin.refreshKnowledgeBases();
+								this.renderDatasetChoices();
+								new Notice(this.plugin.t('datasetsRefreshed', { count: this.plugin.settings.knowledgeBases.length }));
+							} catch (error) {
+								this.plugin.showConnectionError(error);
+							}
+						})();
 					}).extraSettingsEl;
 				refresh.addClass('icon');
 				refresh.setAttr('data-action', 'refresh-pending-mapping');
@@ -2793,8 +2840,8 @@ class MappingEditorModal extends Modal {
 		this.updateDatasetSummary();
 		if (closeMenu) {
 			const box = this.folderSummaryEl.closest('.dropdown-box');
-			box?.querySelector<HTMLElement>('.dropdown-menu')?.setAttr('hidden', 'true');
-			box?.querySelector<HTMLElement>('.dropdown-trigger')?.setAttr('aria-expanded', 'false');
+			box?.querySelector('.dropdown-menu')?.setAttr('hidden', 'true');
+			box?.querySelector('.dropdown-trigger')?.setAttr('aria-expanded', 'false');
 		}
 	}
 
@@ -2804,8 +2851,8 @@ class MappingEditorModal extends Modal {
 			this.datasetSummaryEl.setText(this.plugin.t('chooseFolderFirst'));
 			if (this.datasetTriggerEl) this.datasetTriggerEl.disabled = true;
 			if (this.datasetInputEl) {
-				this.datasetInputEl.value = '';
-				this.datasetInputEl.dataset.datasetId = '';
+		this.datasetInputEl.value = '';
+			this.datasetInputEl.dataset.datasetId = '';
 			}
 			return;
 		}
@@ -2855,8 +2902,8 @@ class MappingEditorModal extends Modal {
 			if (menu === currentMenu) return;
 			menu.hidden = true;
 			const trigger = menu.id
-				? root.querySelector<HTMLElement>(`.dropdown-trigger[aria-controls="${menu.id}"]`)
-				: menu.parentElement?.querySelector<HTMLElement>('.dropdown-trigger');
+				? root.querySelector(`.dropdown-trigger[aria-controls="${menu.id}"]`)
+				: menu.parentElement?.querySelector('.dropdown-trigger');
 			trigger?.setAttr('aria-expanded', 'false');
 		});
 	}
@@ -2876,7 +2923,8 @@ class MappingEditorModal extends Modal {
 
 	private getFolderChildContainer(row: HTMLElement): HTMLElement | null {
 		const targetId = row.dataset.treeTarget;
-		return targetId ? this.contentEl.querySelector<HTMLElement>(`#${targetId}`) : null;
+		const target = targetId ? this.contentEl.querySelector(`#${targetId}`) : null;
+		return target?.instanceOf(HTMLElement) ? target : null;
 	}
 
 	onClose() {
@@ -2895,22 +2943,56 @@ function createEmptyConnectionHealth(): ConnectionHealth {
 	};
 }
 
-function normalizeConnectionHealth(value: any): ConnectionHealth {
+function getReasonProperty(value: unknown): ConnectionErrorReason | undefined {
+	if (!isRecord(value)) return undefined;
+	return isConnectionErrorReason(value.reason) ? value.reason : undefined;
+}
+
+function getDifyMutationDocument(response: DifyMutationResponse): DifyDocument | undefined {
+	const documentValue = response['document'];
+	if (isDifyDocument(documentValue)) return documentValue;
+	const dataValue = response.data;
+	return isDifyDocument(dataValue) ? dataValue : undefined;
+}
+
+function isDifyDocument(value: unknown): value is DifyDocument {
+	return isRecord(value) && typeof value.id === 'string';
+}
+
+function getSyncRecords(value: unknown): Record<string, SyncRecord> {
+	if (!isRecord(value)) return {};
+	return Object.fromEntries(
+		Object.entries(value).filter((entry): entry is [string, SyncRecord] => isSyncRecord(entry[1])),
+	);
+}
+
+function isSyncRecord(value: unknown): value is SyncRecord {
+	return isRecord(value)
+		&& typeof value.filePath === 'string'
+		&& typeof value.datasetId === 'string'
+		&& typeof value.remoteName === 'string'
+		&& typeof value.hash === 'string'
+		&& typeof value.lastModified === 'number'
+		&& typeof value.lastSyncedAt === 'string';
+}
+
+function normalizeConnectionHealth(value: unknown): ConnectionHealth {
 	const fallback = createEmptyConnectionHealth();
-	const status = ['unknown', 'missing_config', 'connected', 'failed'].includes(value?.status) ? value.status : fallback.status;
-	const reason = isConnectionErrorReason(value?.reason)
-		? value.reason as ConnectionErrorReason
+	const health = isRecord(value) ? value : {};
+	const status = ['unknown', 'missing_config', 'connected', 'failed'].includes(String(health.status)) ? health.status as ConnectionHealth['status'] : fallback.status;
+	const reason = isConnectionErrorReason(health.reason)
+		? health.reason
 		: undefined;
 	return {
 		status,
-		checkedAt: typeof value?.checkedAt === 'string' ? value.checkedAt : fallback.checkedAt,
-		activeBaseUrl: typeof value?.activeBaseUrl === 'string' ? value.activeBaseUrl : fallback.activeBaseUrl,
-		lastSuccessfulBaseUrl: typeof value?.lastSuccessfulBaseUrl === 'string' ? value.lastSuccessfulBaseUrl : fallback.lastSuccessfulBaseUrl,
-		datasetCount: clampNumber(value?.datasetCount, 0, 100000, fallback.datasetCount),
-		latencyMs: clampNumber(value?.latencyMs, 0, 600000, fallback.latencyMs),
-		error: typeof value?.error === 'string' ? value.error : undefined,
+		checkedAt: getStringProperty(health, 'checkedAt') || fallback.checkedAt,
+		activeBaseUrl: getStringProperty(health, 'activeBaseUrl') || fallback.activeBaseUrl,
+		lastSuccessfulBaseUrl: getStringProperty(health, 'lastSuccessfulBaseUrl') || fallback.lastSuccessfulBaseUrl,
+		datasetCount: clampNumber(getNumberProperty(health, 'datasetCount') || fallback.datasetCount, 0, 100000, fallback.datasetCount),
+		latencyMs: clampNumber(getNumberProperty(health, 'latencyMs') || fallback.latencyMs, 0, 600000, fallback.latencyMs),
+		error: getStringProperty(health, 'error'),
 		reason,
-		statusCode: typeof value?.statusCode === 'number' ? value.statusCode : undefined,
+		statusCode: getNumberProperty(health, 'statusCode'),
 	};
 }
 
@@ -3001,8 +3083,10 @@ function renderMappingRowCells(
 	const statusControl = statusCell.createDiv('mapping-status-control');
 	const toggle = new ToggleComponent(statusControl)
 		.setValue(mapping.enabled)
-		.onChange(async () => {
-			await onToggleStatus();
+		.onChange(() => {
+			void Promise.resolve(onToggleStatus()).catch((error) => {
+				new Notice(getErrorMessage(error));
+			});
 		});
 	toggle.toggleEl.setAttr('data-action', statusAction);
 	toggle.toggleEl.setAttr('aria-label', mapping.enabled ? plugin.t('enabled') : plugin.t('disabled'));
@@ -3015,6 +3099,5 @@ function createId(): string {
 }
 
 function getErrorMessage(error: unknown): string {
-	const anyError = error as any;
-	return anyError?.message || String(error);
+	return isRecord(error) ? getStringProperty(error, 'message') || String(error) : String(error);
 }

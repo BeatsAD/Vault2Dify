@@ -1,4 +1,4 @@
-import { requestUrl } from 'obsidian';
+import { requestUrl, type RequestUrlParam, type RequestUrlResponse } from 'obsidian';
 import {
 	assertDifyDatasetResponse,
 	describeDifyResponse,
@@ -15,10 +15,20 @@ import type {
 	KnowledgeBaseInfo,
 } from '../types';
 import {
+	getStringProperty,
+	isRecord,
 	parseJson,
 	sanitizeBaseUrl,
 	uniqueStrings,
 } from '../utils/path';
+
+type ErrorLikeRecord = {
+	message?: unknown;
+	reason?: unknown;
+	responseText?: unknown;
+	status?: unknown;
+	text?: unknown;
+};
 
 export interface DifyApiClientHost {
 	settings: DifySyncSettings;
@@ -139,11 +149,11 @@ export class DifyApiClient {
 		const limit = 100;
 
 		for (let page = 1; page <= 50; page++) {
-			const json = await this.request<any>(`/datasets?page=${page}&limit=${limit}`, { method: 'GET' });
+			const json = await this.requestUnknown(`/datasets?page=${page}&limit=${limit}`, { method: 'GET' });
 			const items = this.extractDatasets(json);
 			results.push(...items);
 
-			if (!json?.has_more && items.length < limit) {
+			if (!hasMore(json) && items.length < limit) {
 				break;
 			}
 		}
@@ -151,7 +161,7 @@ export class DifyApiClient {
 		return results;
 	}
 
-	private extractDatasets(json: any): KnowledgeBaseInfo[] {
+	private extractDatasets(json: unknown): KnowledgeBaseInfo[] {
 		return extractKnowledgeBasesFromResponse(json);
 	}
 
@@ -160,10 +170,10 @@ export class DifyApiClient {
 		const limit = 100;
 
 		for (let page = 1; page <= 50; page++) {
-			const json: any = await this.requestOnce(baseUrl, `/datasets?page=${page}&limit=${limit}`, { method: 'GET' });
+			const json = await this.requestOnce(baseUrl, `/datasets?page=${page}&limit=${limit}`, { method: 'GET' });
 			const items = this.extractDatasets(json);
 			results.push(...items);
-			if (!json?.has_more && items.length < limit) {
+			if (!hasMore(json) && items.length < limit) {
 				break;
 			}
 		}
@@ -176,15 +186,13 @@ export class DifyApiClient {
 		const limit = 100;
 
 		for (let page = 1; page <= 100; page++) {
-			const json = await this.request<any>(`/datasets/${encodeURIComponent(datasetId)}/documents?page=${page}&limit=${limit}`, { method: 'GET' });
-			const items: DifyDocument[] = Array.isArray(json?.data) ? json.data : Array.isArray(json) ? json : [];
+			const json = await this.requestUnknown(`/datasets/${encodeURIComponent(datasetId)}/documents?page=${page}&limit=${limit}`, { method: 'GET' });
+			const items = getDifyDocumentItems(json);
 			items.forEach((item) => {
-				if (item?.id) {
-					results.push(item);
-				}
+				results.push(item);
 			});
 
-			if (!json?.has_more && items.length < limit) {
+			if (!hasMore(json) && items.length < limit) {
 				break;
 			}
 		}
@@ -209,8 +217,8 @@ export class DifyApiClient {
 		});
 	}
 
-	async getIndexingStatus(datasetId: string, batch: string): Promise<any> {
-		return this.request<any>(`/datasets/${encodeURIComponent(datasetId)}/documents/${encodeURIComponent(batch)}/indexing-status`, { method: 'GET' });
+	async getIndexingStatus(datasetId: string, batch: string): Promise<unknown> {
+		return this.requestUnknown(`/datasets/${encodeURIComponent(datasetId)}/documents/${encodeURIComponent(batch)}/indexing-status`, { method: 'GET' });
 	}
 
 	private async mutateTextDocument(datasetId: string, documentId: string | undefined, body: Record<string, unknown>): Promise<DifyMutationResponse> {
@@ -223,10 +231,10 @@ export class DifyApiClient {
 				: `/datasets/${encodeURIComponent(datasetId)}/document/${style === 'hyphen' ? 'create-by-text' : 'create_by_text'}`;
 
 			try {
-				const response = await this.request<DifyMutationResponse>(path, {
-					method: 'POST',
-					body,
-				});
+					const response = await this.request<DifyMutationResponse>(path, {
+						method: 'POST',
+						body,
+					}, isDifyMutationResponse);
 				this.runtimePathStyle = style;
 				return response;
 			} catch (error) {
@@ -256,7 +264,11 @@ export class DifyApiClient {
 		return ['hyphen', 'underscore'];
 	}
 
-	private async request<T>(path: string, options: { method: string; body?: unknown }): Promise<T> {
+	private async requestUnknown(path: string, options: { method: string; body?: unknown }): Promise<unknown> {
+		return this.request(path, options, (value): value is unknown => true);
+	}
+
+	private async request<T>(path: string, options: { method: string; body?: unknown }, validate: (value: unknown) => value is T): Promise<T> {
 		const baseUrls = this.getCandidateBaseUrls();
 		let lastError: DifyApiError | null = null;
 
@@ -264,11 +276,14 @@ export class DifyApiClient {
 			const maxAttempts = Math.max(1, this.host.settings.maxRetries + 1);
 
 			for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-				try {
-					const response = await this.requestOnce(baseUrl, path, options);
-					this.activeBaseUrl = baseUrl;
-					return response as T;
-				} catch (error) {
+					try {
+						const response = await this.requestOnce(baseUrl, path, options);
+						this.activeBaseUrl = baseUrl;
+						if (!validate(response)) {
+							throw new DifyApiError('Dify returned an unexpected response shape.', undefined, JSON.stringify(response));
+						}
+						return response;
+					} catch (error) {
 					const apiError = this.toApiError(error);
 					lastError = apiError;
 
@@ -302,18 +317,19 @@ export class DifyApiClient {
 		});
 
 		try {
-			const requestPromise = requestUrl({
-				url,
-				method: options.method,
-				headers: {
-					Authorization: `Bearer ${this.host.settings.difyApiKey}`,
-					'Content-Type': 'application/json',
-				},
-				body: options.body ? JSON.stringify(options.body) : undefined,
-				throw: false,
-			} as any);
+				const requestOptions: RequestUrlParam = {
+					url,
+					method: options.method,
+					headers: {
+						Authorization: `Bearer ${this.host.settings.difyApiKey}`,
+						'Content-Type': 'application/json',
+					},
+					body: options.body ? JSON.stringify(options.body) : undefined,
+					throw: false,
+				};
+				const requestPromise = requestUrl(requestOptions);
 
-			const response: any = await Promise.race([requestPromise, timeoutPromise]);
+				const response = await Promise.race<RequestUrlResponse>([requestPromise, timeoutPromise]);
 			if (timeoutId !== null) {
 				window.clearTimeout(timeoutId);
 			}
@@ -354,7 +370,9 @@ export class DifyApiClient {
 
 	private extractErrorMessage(text: string, status: number): string {
 		const json = parseJson(text);
-		const message = json?.message || json?.error || json?.detail || text || 'Unknown error';
+		const message = isRecord(json)
+			? getStringProperty(json, 'message') || getStringProperty(json, 'error') || getStringProperty(json, 'detail') || text || 'Unknown error'
+			: text || 'Unknown error';
 		return `HTTP ${status}: ${String(message).slice(0, 300)}`;
 	}
 
@@ -376,13 +394,46 @@ export class DifyApiClient {
 			return error;
 		}
 
-		const anyError = error as any;
-		const status = typeof anyError?.status === 'number' ? anyError.status : undefined;
-		const message = anyError?.message || String(error);
-		const responseText = anyError?.text || anyError?.responseText;
-		const reason = isConnectionErrorReason(anyError?.reason) ? anyError.reason : undefined;
+		const errorRecord = toErrorRecord(error);
+		const status = typeof errorRecord.status === 'number' ? errorRecord.status : undefined;
+		const message = typeof errorRecord.message === 'string' ? errorRecord.message : String(error);
+		const responseText = typeof errorRecord.text === 'string'
+			? errorRecord.text
+			: typeof errorRecord.responseText === 'string'
+				? errorRecord.responseText
+				: undefined;
+		const reason = isConnectionErrorReason(errorRecord.reason) ? errorRecord.reason : undefined;
 		return new DifyApiError(message, status, responseText, reason);
 	}
+}
+
+function hasMore(value: unknown): boolean {
+	return isRecord(value) && value.has_more === true;
+}
+
+function getDifyDocumentItems(value: unknown): DifyDocument[] {
+	const candidates = Array.isArray(value)
+		? value
+		: isRecord(value) && Array.isArray(value.data)
+			? value.data
+			: [];
+	return candidates.filter(isDifyDocument);
+}
+
+function isDifyDocument(value: unknown): value is DifyDocument {
+	return isRecord(value) && typeof value.id === 'string';
+}
+
+function isDifyMutationResponse(value: unknown): value is DifyMutationResponse {
+	if (!isRecord(value)) return false;
+	const maybeDocument = value['document'];
+	const maybeData = value.data;
+	return (maybeDocument === undefined || isDifyDocument(maybeDocument))
+		&& (maybeData === undefined || isDifyDocument(maybeData));
+}
+
+function toErrorRecord(error: unknown): ErrorLikeRecord {
+	return isRecord(error) ? error : {};
 }
 
 export function classifyConnectionApiError(error: DifyApiError): ConnectionErrorReason {
