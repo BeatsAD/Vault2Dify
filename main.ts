@@ -708,11 +708,7 @@ export default class DifySyncPlugin extends Plugin {
 		return value;
 	}
 
-	debug(...args: unknown[]) {
-		if (this.settings.debugLogging) {
-			// eslint-disable-next-line obsidianmd/rule-custom-message -- User-enabled diagnostic logging.
-			console.log('[Dify Sync]', ...args);
-		}
+	debug(..._args: unknown[]) {
 	}
 
 	getConnectionFailureMessage(reason: ConnectionErrorReason = 'unknown'): string {
