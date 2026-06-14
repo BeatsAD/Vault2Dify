@@ -1600,7 +1600,8 @@ class DifySyncSettingTab extends PluginSettingTab {
 	private renderTopbar(containerEl: HTMLElement) {
 		const topbar = containerEl.createEl('header', { cls: 'topbar' });
 		const titleLine = topbar.createDiv('title-line');
-		titleLine.createEl('h1', { text: this.plugin.t('settingsTitle'), cls: 'heading-text' });
+		const titleHeading = new Setting(titleLine).setName(this.plugin.t('settingsTitle')).setHeading();
+		titleHeading.nameEl.addClass('heading-text');
 		titleLine.createEl('p', { text: this.plugin.t('settingsSubtitle'), cls: 'settings-subtitle' });
 		const actions = topbar.createDiv('top-actions');
 		const languageButton = new ExtraButtonComponent(actions)
@@ -2012,7 +2013,9 @@ class DifySyncSettingTab extends PluginSettingTab {
 		const section = containerEl.createEl('section', { cls: 'section', attr: { 'aria-labelledby': titleId } });
 		const head = section.createDiv('section-head');
 		const titleLine = head.createDiv('heading-line');
-		titleLine.createEl('h2', { text: title, cls: 'heading-text', attr: { id: titleId } });
+		const heading = new Setting(titleLine).setName(title).setHeading();
+		heading.nameEl.addClass('heading-text');
+		heading.nameEl.id = titleId;
 		if (renderAction) renderAction(head);
 		return { card: section.createDiv('section-card') };
 	}

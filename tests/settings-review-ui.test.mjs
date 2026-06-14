@@ -64,21 +64,21 @@ test("settings tab renders restored review layout with native Obsidian setting c
 	sourceContainsAll(settingsTabBlock, [
 		"section-card",
 		"setting-row",
-			"native-setting-row",
-			"createEl('h1'",
-			"keyInput.id = 'dify-api-key';",
-			"toggle.setAttr('aria-controls', 'dify-api-key');",
-			"private createNativeSetting(container: HTMLElement, ...layoutClasses: string[]): Setting",
-			"new Setting(container).setClass('native-setting-row')",
-			"setting.settingEl.addClass(className)",
-			"this.createNativeSetting(card, 'setting-row')",
-			"this.createNativeSetting(card, 'setting-row', 'switch-row')",
-			"this.createNativeSetting(container, 'advanced-field')",
-			"new ButtonComponent(actions)",
-			"addText((text)",
-			"addDropdown((dropdown)",
-			"addToggle((toggle)",
-			"addExtraButton((button)",
+		"native-setting-row",
+		"new Setting(titleLine).setName(this.plugin.t('settingsTitle')).setHeading()",
+		"keyInput.id = 'dify-api-key';",
+		"toggle.setAttr('aria-controls', 'dify-api-key');",
+		"private createNativeSetting(container: HTMLElement, ...layoutClasses: string[]): Setting",
+		"new Setting(container).setClass('native-setting-row')",
+		"setting.settingEl.addClass(className)",
+		"this.createNativeSetting(card, 'setting-row')",
+		"this.createNativeSetting(card, 'setting-row', 'switch-row')",
+		"this.createNativeSetting(container, 'advanced-field')",
+		"new ButtonComponent(actions)",
+		"addText((text)",
+		"addDropdown((dropdown)",
+		"addToggle((toggle)",
+		"addExtraButton((button)",
 		"status-line",
 		"statusLine.setAttr('aria-label'",
 		"connection-action-buttons",
@@ -347,7 +347,8 @@ test("settings topbar renders localized plugin subtitle below the title", () => 
 		"settingsSubtitle: 'Sync your Obsidian Vault to Dify Knowledge Base'",
 	]);
 	sourceContainsAll(topbarBlock, [
-		"titleLine.createEl('h1', { text: this.plugin.t('settingsTitle'), cls: 'heading-text' });",
+		"const titleHeading = new Setting(titleLine).setName(this.plugin.t('settingsTitle')).setHeading();",
+		"titleHeading.nameEl.addClass('heading-text');",
 		"titleLine.createEl('p', { text: this.plugin.t('settingsSubtitle'), cls: 'settings-subtitle' });",
 	]);
 	assert.ok(
@@ -883,13 +884,13 @@ test("only API key and Dify service URL retain native setting help text", () => 
 	);
 	assert.match(
 		mainSource,
-		/createEl\('h1', \{ text: this\.plugin\.t\('settingsTitle'\), cls: 'heading-text' \}\)/,
-		"Settings title should have a dedicated compact heading text class",
+		/new Setting\(titleLine\)\.setName\(this\.plugin\.t\('settingsTitle'\)\)\.setHeading\(\)/,
+		"Settings title should use Obsidian Setting heading",
 	);
 	assert.match(
 		mainSource,
-		/createEl\('h2', \{ text: title, cls: 'heading-text', attr: \{ id: titleId \} \}\)/,
-		"Section headings should have a dedicated compact heading text class",
+		/new Setting\(titleLine\)\.setName\(title\)\.setHeading\(\)/,
+		"Section headings should use Obsidian Setting heading",
 	);
 	assert.equal(
 		countOccurrences(settingsTabBlock, ".setTooltip(this.plugin.t('apiKeyDesc'))"),
