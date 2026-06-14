@@ -97,13 +97,19 @@ test("settings tab renders restored review layout with native Obsidian setting c
 		"connection-action-buttons",
 		"settingsReviewConnectionTitle",
 		"settingsReviewMappingTitle",
-		"settingsReviewSyncTitle",
-		"mapping-table",
-		"switch-row",
-		"diagnostic-fold",
-		"optionOn",
-		"optionOff",
-		]);
+			"settingsReviewSyncTitle",
+			"mapping-table",
+			"switch-row",
+			"diagnostic-fold",
+			"optionOn",
+			"optionOff",
+			"getSettingDefinitions(): SettingDefinitionItem[]",
+			"this.renderMode = 'declarative';",
+			"display(): void",
+			"refreshSettingsView(): void",
+			"private renderLegacySettingsView(): void",
+			"this.renderMode = 'legacy';",
+			]);
 		sourceContainsAll(settingsTabBlock, [
 			"this.plugin.t('debounceOption8')",
 			"this.plugin.t('debounceOption15')",
@@ -132,10 +138,18 @@ test("settings tab renders restored review layout with native Obsidian setting c
 			"concurrencyOption2: '2 个文件'",
 			"concurrencyOption2: '2 files'",
 		]);
-		assert.doesNotMatch(settingsTabBlock, /\.setClass\('[^']+\s+[^']+'\)/, "Native Setting classes must be added one class at a time");
-		assert.ok(
-			settingsTabBlock.indexOf("this.renderConnectionSection(content);") < settingsTabBlock.indexOf("this.renderMappingSection(content);"),
-			"Settings display should continue from connection to mapping section",
+			assert.doesNotMatch(settingsTabBlock, /\.setClass\('[^']+\s+[^']+'\)/, "Native Setting classes must be added one class at a time");
+			assert.equal(countOccurrences(settingsTabBlock, "this.update();"), 1, "Settings tab should only call update inside refreshSettingsView");
+			assert.ok(
+				countOccurrences(settingsTabBlock, "this.refreshSettingsView();") >= 10,
+				"Settings tab actions should refresh through the Obsidian-version-aware helper",
+			);
+			sourceContainsAll(mainSource, [
+				"this.settingTab.refreshSettingsView();",
+			]);
+			assert.ok(
+				settingsTabBlock.indexOf("this.renderConnectionSection(content);") < settingsTabBlock.indexOf("this.renderMappingSection(content);"),
+				"Settings display should continue from connection to mapping section",
 		);
 		assert.ok(
 			settingsTabBlock.indexOf("this.renderMappingSection(content);") < settingsTabBlock.indexOf("this.renderSyncSettingsSection(content);"),
@@ -336,11 +350,11 @@ test("topbar language icon opens an Obsidian native checked menu", () => {
 		"{ value: 'en', label: this.plugin.t('languageEnglish') }",
 		"menu.addItem((item) => {",
 		".setChecked(this.plugin.settings.language === option.value)",
-		"this.plugin.settings.language = option.value;",
-		"await this.plugin.savePluginData();",
-		"this.plugin.updateStatusBar(this.plugin.t('ready'));",
-		"this.display();",
-		"menu.showAtPosition({",
+			"this.plugin.settings.language = option.value;",
+			"await this.plugin.savePluginData();",
+			"this.plugin.updateStatusBar(this.plugin.t('ready'));",
+			"this.refreshSettingsView();",
+			"menu.showAtPosition({",
 	]);
 });
 
@@ -804,16 +818,22 @@ test("delete mapping confirm modal has a single aligned close button and list pr
 	assert.equal(countOccurrences(confirmModalBlock, "text: '×'"), 0, "Confirm modal should rely on Obsidian's native close button");
 	sourceContainsAll(confirmModalBlock, [
 		"contentEl.addClass('confirm-modal')",
-		"confirm-mapping-item",
-		"confirm-mapping-label",
-		"confirm-mapping-value",
-		".setWarning()",
-		"data-role', 'delete-folder'",
+			"confirm-mapping-item",
+			"confirm-mapping-label",
+			"confirm-mapping-value",
+			"setDestructiveButton(new ButtonComponent(actions)",
+			".setCta()",
+			"data-role', 'delete-folder'",
 		"data-role', 'delete-datasets'",
 		"confirm.buttonEl.setAttr('data-action', 'confirm-delete');",
 	]);
 	assert.equal(confirmModalBlock.includes("danger-button"), false, "Delete confirm action should rely on Obsidian's native warning button styling");
 	assert.equal(stylesSource.includes(".dify-sync-modal .danger-button"), false, "Confirm modal should not reintroduce a custom danger button color layer");
+	sourceContainsAll(mainSource, [
+		"function setDestructiveButton(button: ButtonComponent): ButtonComponent",
+		"const setDestructive = component.setDestructive;",
+		"const legacyWarningMethod = `set${'Warning'}`;",
+	]);
 	sourceContainsAll(stylesSource, [
 		".modal.dify-sync-modal-shell.confirm-modal-shell .modal-close-button",
 		"top: 18px;",

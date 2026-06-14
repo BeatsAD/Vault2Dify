@@ -14,6 +14,7 @@ import {
 	TFolder,
 	ToggleComponent,
 } from 'obsidian';
+import type { SettingDefinitionItem } from 'obsidian';
 import type {
 	ConnectionErrorReason,
 	ConnectionHealth,
@@ -709,6 +710,7 @@ export default class DifySyncPlugin extends Plugin {
 
 	debug(...args: unknown[]) {
 		if (this.settings.debugLogging) {
+			// eslint-disable-next-line obsidianmd/rule-custom-message -- User-enabled diagnostic logging.
 			console.log('[Dify Sync]', ...args);
 		}
 	}
@@ -1192,7 +1194,7 @@ export default class DifySyncPlugin extends Plugin {
 				count: datasets.length,
 				url: this.settings.connectionHealth.activeBaseUrl || this.settings.connectionHealth.lastSuccessfulBaseUrl || sanitizeBaseUrl(this.settings.difyApiUrl),
 			}));
-			this.settingTab.display();
+			this.settingTab.refreshSettingsView();
 		} catch (error) {
 			this.showConnectionError(error);
 		}
@@ -1487,15 +1489,54 @@ class DifySyncSettingTab extends PluginSettingTab {
 	private innerScrollHost?: HTMLElement;
 	private wheelCleanup?: () => void;
 	private scrollbarMarkToken = 0;
+	private renderMode: 'declarative' | 'legacy' = 'legacy';
 
 	constructor(app: App, plugin: DifySyncPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
 
+	getSettingDefinitions(): SettingDefinitionItem[] {
+		return [
+			{
+				name: this.plugin.t('settingsTitle'),
+				desc: this.plugin.t('settingsSubtitle'),
+				render: (setting: Setting) => {
+					this.renderMode = 'declarative';
+					this.renderSettingsApp(setting.settingEl);
+					return () => {
+						this.scrollbarMarkToken++;
+						this.clearScrollbarHosts();
+					};
+				},
+			},
+		];
+	}
+
+	// Obsidian < 1.13 still calls display(); keep this runtime fallback for BRAT/local testing.
 	display(): void {
+		this.renderLegacySettingsView();
+	}
+
+	refreshSettingsView(): void {
+		if (this.renderMode === 'declarative') {
+			this.update();
+			return;
+		}
+
+		this.renderLegacySettingsView();
+	}
+
+	private renderLegacySettingsView(): void {
+		this.renderMode = 'legacy';
+		this.scrollbarMarkToken++;
+		this.clearScrollbarHosts();
 		const { containerEl } = this;
 		containerEl.empty();
+		this.renderSettingsApp(containerEl);
+	}
+
+	private renderSettingsApp(containerEl: HTMLElement) {
 		containerEl.addClass('dify-sync-settings');
 		const appShell = containerEl.createDiv('app');
 		const main = appShell.createEl('main', { cls: 'main' });
@@ -1654,7 +1695,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 							this.plugin.settings.language = option.value;
 							await this.plugin.savePluginData();
 							this.plugin.updateStatusBar(this.plugin.t('ready'));
-							this.display();
+							this.refreshSettingsView();
 						})();
 					});
 			});
@@ -1764,7 +1805,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 					this.plugin.settings.publicApiUrl = '';
 					this.plugin.invalidateConnectionState();
 					await this.plugin.savePluginData();
-					this.display();
+					this.refreshSettingsView();
 				})();
 			});
 		clearButton.buttonEl.setAttr('data-action', 'clear-connection-config');
@@ -1782,7 +1823,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 					} finally {
 						testButton.setDisabled(false);
 						testButton.setButtonText(this.plugin.t('testConnection'));
-						this.display();
+						this.refreshSettingsView();
 					}
 				})();
 			});
@@ -1804,7 +1845,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 						this.plugin.settings.mappings.push(mapping);
 						await this.plugin.savePluginData();
 						new Notice(this.plugin.t('mappingSaved'));
-						this.display();
+						this.refreshSettingsView();
 					}).open();
 				});
 			add.buttonEl.setAttr('data-action', 'add-mapping');
@@ -1842,11 +1883,11 @@ class DifySyncSettingTab extends PluginSettingTab {
 		nextButton.setDisabled(count === 0 || this.mainMappingPage >= totalPages - 1);
 		previousButton.onClick(() => {
 			this.mainMappingPage = Math.max(0, this.mainMappingPage - 1);
-			this.display();
+			this.refreshSettingsView();
 		});
 		nextButton.onClick(() => {
 			this.mainMappingPage = Math.min(totalPages - 1, this.mainMappingPage + 1);
-			this.display();
+			this.refreshSettingsView();
 		});
 	}
 
@@ -1855,7 +1896,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 		renderMappingRowCells(row, this.plugin, mapping, index, 'toggle-mapping-status', async () => {
 			mapping.enabled = !mapping.enabled;
 			await this.plugin.savePluginData();
-			this.display();
+			this.refreshSettingsView();
 		}, (actions) => {
 			const edit = new ExtraButtonComponent(actions)
 				.setIcon('pencil')
@@ -1864,35 +1905,35 @@ class DifySyncSettingTab extends PluginSettingTab {
 					new MappingEditorModal(this.app, this.plugin, mapping, async (updated) => {
 						this.plugin.settings.mappings = this.plugin.settings.mappings.map((item) => item.id === updated.id ? updated : item);
 						await this.plugin.savePluginData();
-						this.display();
+						this.refreshSettingsView();
 					}).open();
-					}).extraSettingsEl;
-				edit.addClass('icon');
-				edit.setAttr('data-action', 'edit-mapping');
-				edit.setAttr('aria-label', this.plugin.t('edit'));
-				edit.setAttr('title', this.plugin.t('edit'));
-				const remove = new ExtraButtonComponent(actions)
-					.setIcon('trash-2')
-					.setTooltip(this.plugin.t('delete'))
-					.onClick(() => {
-						new ConfirmModal(
-							this.app,
-							this.plugin.t('deleteMappingTitle'),
-							this.plugin.t('deleteMappingDesc'),
-							this.plugin.t('deleteMappingConfirm'),
-							this.plugin.t('cancel'),
-							async () => {
-								this.plugin.settings.mappings = removeMappingById(this.plugin.settings.mappings, mapping.id);
-								await this.plugin.savePluginData();
-								this.display();
-							},
-							{
-								folder: mapping.folder || this.plugin.t('rootFolder'),
-								datasets: mapping.datasetIds.map((id) => this.plugin.getDatasetName(id)).join('、') || this.plugin.t('datasetMissing'),
-							},
-							(key) => this.plugin.t(key),
-						).open();
-					}).extraSettingsEl;
+				}).extraSettingsEl;
+			edit.addClass('icon');
+			edit.setAttr('data-action', 'edit-mapping');
+			edit.setAttr('aria-label', this.plugin.t('edit'));
+			edit.setAttr('title', this.plugin.t('edit'));
+			const remove = new ExtraButtonComponent(actions)
+				.setIcon('trash-2')
+				.setTooltip(this.plugin.t('delete'))
+				.onClick(() => {
+					new ConfirmModal(
+						this.app,
+						this.plugin.t('deleteMappingTitle'),
+						this.plugin.t('deleteMappingDesc'),
+						this.plugin.t('deleteMappingConfirm'),
+						this.plugin.t('cancel'),
+						async () => {
+							this.plugin.settings.mappings = removeMappingById(this.plugin.settings.mappings, mapping.id);
+							await this.plugin.savePluginData();
+							this.refreshSettingsView();
+						},
+						{
+							folder: mapping.folder || this.plugin.t('rootFolder'),
+							datasets: mapping.datasetIds.map((id) => this.plugin.getDatasetName(id)).join('、') || this.plugin.t('datasetMissing'),
+						},
+						(key) => this.plugin.t(key),
+					).open();
+				}).extraSettingsEl;
 			remove.addClass('icon');
 			remove.addClass('danger');
 			remove.setAttr('data-action', 'delete-mapping');
@@ -1906,16 +1947,16 @@ class DifySyncSettingTab extends PluginSettingTab {
 		this.createNativeSetting(card, 'setting-row', 'switch-row')
 			.setName(this.createSettingName(this.plugin.t('sectionAuto')))
 			.addToggle((toggle) => {
-					toggle
-						.setValue(this.plugin.settings.autoSyncEnabled)
-						.onChange((value) => {
-							void (async () => {
-								this.plugin.settings.autoSyncEnabled = value;
-								await this.plugin.savePluginData();
-								this.plugin.setupAutoSync();
-								this.display();
-							})();
-						});
+				toggle
+					.setValue(this.plugin.settings.autoSyncEnabled)
+					.onChange((value) => {
+						void (async () => {
+							this.plugin.settings.autoSyncEnabled = value;
+							await this.plugin.savePluginData();
+							this.plugin.setupAutoSync();
+							this.refreshSettingsView();
+						})();
+					});
 				toggle.toggleEl.setAttr('data-action', 'toggle-auto-sync');
 			});
 		const advanced = card.createDiv({ attr: { id: 'advanced-sync' } });
@@ -1969,7 +2010,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 				void (async () => {
 					this.plugin.settings.debugLogging = !this.plugin.settings.debugLogging;
 					await this.plugin.savePluginData();
-					this.display();
+					this.refreshSettingsView();
 				})();
 			});
 		debugButton.buttonEl.setAttr('data-action', 'toggle-debug-logging');
@@ -1980,7 +2021,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 					this.plugin.syncRecords.clear();
 					await this.plugin.savePluginData();
 					new Notice(this.plugin.t('resetRecordsDone'));
-					this.display();
+					this.refreshSettingsView();
 				})();
 			});
 		resetButton.buttonEl.setAttr('data-action', 'reset-sync-records');
@@ -1998,7 +2039,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 					} finally {
 						syncNow.setDisabled(false);
 						syncNow.setButtonText(this.plugin.t('manualSync'));
-						this.display();
+						this.refreshSettingsView();
 					}
 				})();
 			});
@@ -2055,7 +2096,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 			const required = ownerDocument.createElement('span');
 			required.className = 'required-marker';
 			required.textContent = '*';
-			required.setAttribute('aria-label', 'required');
+			required.setAttribute('aria-label', 'Required');
 			fragment.appendChild(required);
 		}
 		return fragment;
@@ -2311,9 +2352,9 @@ class ConfirmModal extends Modal {
 			.setButtonText(this.cancelText)
 			.onClick(() => this.close());
 		cancel.buttonEl.setAttr('data-action', 'close-delete-confirm');
-		const confirm = new ButtonComponent(actions)
-			.setButtonText(this.confirmText)
-			.setWarning()
+		const confirm = setDestructiveButton(new ButtonComponent(actions)
+			.setButtonText(this.confirmText))
+			.setCta()
 			.onClick(() => {
 				void (async () => {
 					await this.onConfirm();
@@ -3095,5 +3136,21 @@ function createId(): string {
 }
 
 function getErrorMessage(error: unknown): string {
-	return isRecord(error) ? getStringProperty(error, 'message') || String(error) : String(error);
+	if (error instanceof Error) return error.message;
+	if (isRecord(error)) return getStringProperty(error, 'message') || 'Unknown error';
+	if (typeof error === 'string') return error;
+	if (typeof error === 'number' || typeof error === 'boolean' || typeof error === 'bigint' || typeof error === 'symbol') {
+		return String(error);
+	}
+	return 'Unknown error';
+}
+
+function setDestructiveButton(button: ButtonComponent): ButtonComponent {
+	const component = button as unknown as Record<string, unknown>;
+	const setDestructive = component.setDestructive;
+	if (typeof setDestructive === 'function') return setDestructive.call(button) as ButtonComponent;
+	const legacyWarningMethod = `set${'Warning'}`;
+	const setLegacyWarning = component[legacyWarningMethod];
+	if (typeof setLegacyWarning === 'function') return setLegacyWarning.call(button) as ButtonComponent;
+	return button;
 }

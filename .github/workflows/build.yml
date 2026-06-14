@@ -30,6 +30,9 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Obsidian lint
+        run: npm run lint:obsidian
+
       - name: Typecheck
         run: npm run typecheck
 
