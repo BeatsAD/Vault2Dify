@@ -41,7 +41,7 @@ jobs:
 
       - name: Verify manifest version matches tag
         run: |
-          node -e "const manifest=require('./manifest.json'); const tag=process.env.GITHUB_REF_NAME; if (manifest.version !== tag) { throw new Error(`manifest.json version ${manifest.version} does not match tag ${tag}`); }"
+          node -e 'const manifest=require("./manifest.json"); const tag=process.env.GITHUB_REF_NAME; if (manifest.version !== tag) { throw new Error(`manifest.json version ${manifest.version} does not match tag ${tag}`); }'
 
       - name: Generate artifact attestations
         uses: actions/attest@v4
