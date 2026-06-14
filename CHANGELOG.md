@@ -2,44 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## 3.0.0 - 2026-06-08
-
-### Added
-
-- Settings review layout with top language/help/GitHub actions and four recent-sync summary metrics.
-- Connection action row for clearing config and testing the Dify connection; successful tests refresh and save the knowledge base list.
-- API key show/hide control in the connection section.
-- Table-based path mappings with index, Obsidian path, knowledge base tags, status switch, and icon-only edit/delete controls.
-- Tested settings summary view-model for recent sync metrics and connection tones.
-
-### Changed
-
-- Renamed the release identity to Vault2Dify, including plugin metadata, package metadata, GitHub links, installation paths, and settings/help copy.
-- Updated release metadata in `package.json`, `package-lock.json`, `manifest.json`, and `versions.json` to `3.0.0`.
-- Updated README, Chinese user guide, installation notes, and release checklist for the 3.0 settings review experience.
-- Reconciled current documentation with the latest shipped plugin UI, including path mappings, fixed sync-setting choices, and hidden compatibility fields.
-
-## 2.0.0 - 2026-06-07
-
-### Added
-
-- Progressive 2.0 settings experience with a first-run path: fill the Dify API Key, test the connection, refresh knowledge bases, then add a folder mapping.
-- Connection health overview for current availability, active Dify address, last successful address, recent sync status, and clearer failure feedback.
-- Card-based folder mappings with enable/disable state, knowledge base tags, edit controls, and delete confirmation that explains local and remote deletion boundaries.
-- Mapping modal flow for selecting an Obsidian folder, choosing one or more Dify knowledge bases, and saving an enabled or disabled mapping.
-- Sync diagnostics panel for recent sync source, totals, duration, active address, errors, and recently failed files.
-- Short status bar messages such as ready, syncing, and failed, with longer details moved into settings diagnostics.
-
-### Changed
-
-- Updated README, Chinese user guide, installation notes, release checklist, and security guidance for the 2.0 setup, upgrade, and privacy expectations.
-- Aligned release metadata in `package.json`, `package-lock.json`, `manifest.json`, and `versions.json` to `2.0.0`.
-
-### Validation
-
-- Added 2.0 release checklist coverage for version consistency, prototype-critical setup flow, Dify connection checks, folder mappings, sync behavior, local deletion policy, release assets, and privacy boundaries.
-
-## 1.0.0 - 2026-06-07
+## 1.0.0 - 2026-06-08
 
 ### Added
 
@@ -63,6 +26,28 @@ All notable changes to this project will be documented in this file.
 - Settings diagnostics for active Dify endpoint and recent sync details.
 - Test foundation for sync utilities such as URL normalization, folder matching, ID parsing, numeric clamping, and sync record keys.
 - Gradual source split for shared types, Dify API client, sync record helpers, and path/parsing utilities.
+- Progressive settings experience with a first-run path: fill the Dify API Key, test the connection, refresh knowledge bases, then add a folder mapping.
+- Connection health overview for current availability, active Dify address, last successful address, recent sync status, and clearer failure feedback.
+- Card-based folder mappings with enable/disable state, knowledge base tags, edit controls, and delete confirmation that explains local and remote deletion boundaries.
+- Mapping modal flow for selecting an Obsidian folder, choosing one or more Dify knowledge bases, and saving an enabled or disabled mapping.
+- Sync diagnostics panel for recent sync source, totals, duration, active address, errors, and recently failed files.
+- Short status bar messages such as ready, syncing, and failed, with longer details moved into settings diagnostics.
+- Settings review layout with top language/help/GitHub actions and four recent-sync summary metrics.
+- Connection action row for clearing config and testing the Dify connection; successful tests refresh and save the knowledge base list.
+- API key show/hide control in the connection section.
+- Table-based path mappings with index, Obsidian path, knowledge base tags, status switch, and icon-only edit/delete controls.
+- Tested settings summary view-model for recent sync metrics and connection tones.
+
+### Changed
+
+- Renamed the release identity to Vault2Dify, including plugin metadata, package metadata, GitHub links, installation paths, and settings/help copy.
+- Updated release metadata in `package.json`, `package-lock.json`, `manifest.json`, and `versions.json` to `1.0.0`.
+- Updated README, Chinese user guide, installation notes, and release checklist for the settings review experience.
+- Reconciled current documentation with the latest shipped plugin UI, including path mappings, fixed sync-setting choices, and hidden compatibility fields.
+
+### Validation
+
+- Added release checklist coverage for version consistency, setup flow, Dify connection checks, folder mappings, sync behavior, local deletion policy, release assets, and privacy boundaries.
 
 ### Documentation
 
