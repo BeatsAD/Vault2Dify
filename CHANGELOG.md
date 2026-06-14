@@ -1,5 +1,7 @@
 # Changelog
 
+English | [中文](CHANGELOG_ZH.md)
+
 All notable changes to this project will be documented in this file.
 
 ## 1.0.0 - 2026-06-08
