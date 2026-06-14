@@ -1693,7 +1693,9 @@ class DifySyncSettingTab extends PluginSettingTab {
 	private renderConnectionSection(containerEl: HTMLElement) {
 		const { card } = this.createReviewSection(containerEl, 'connection-title', this.plugin.t('settingsReviewConnectionTitle'));
 		let keyInput: HTMLInputElement;
-		this.createNativeSetting(card, 'setting-row')
+		const apiKeySetting = this.createNativeSetting(card, 'setting-row');
+		apiKeySetting.controlEl.addClass('has-secret-toggle');
+		apiKeySetting
 			.setName(this.createSettingName(this.plugin.t('apiKeyName'), { required: true }))
 			.setTooltip(this.plugin.t('apiKeyDesc'))
 			.addText((text) => {
@@ -2653,7 +2655,9 @@ class MappingEditorModal extends Modal {
 
 	private renderDatasetChoices() {
 		this.datasetOptionsEl.empty();
+		this.datasetOptionsEl.removeClass('is-empty');
 		if (this.plugin.settings.knowledgeBases.length === 0) {
+			this.datasetOptionsEl.addClass('is-empty');
 			this.datasetOptionsEl.createDiv({ text: this.plugin.t('datasetsDropdownEmpty'), cls: 'dataset-empty-state' });
 			return;
 		}

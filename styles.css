@@ -9,7 +9,7 @@
 }
 
 .dify-sync-error {
-    color: var(--text-error) !important;
+    color: var(--text-error);
     font-weight: bold;
 }
 
@@ -105,7 +105,7 @@
 
 .dify-sync-settings .is-hidden,
 .dify-sync-modal .is-hidden {
-    display: none !important;
+    display: none;
 }
 
 /* Theme bridge: Obsidian variables shared by the settings page and plugin modals. */
@@ -192,32 +192,30 @@
 }
 
 .dify-sync-settings .heading-text {
-    display: inline-block !important;
-    position: static !important;
-    width: auto !important;
-    max-width: 100% !important;
-    flex: 0 0 auto !important;
-    height: auto !important;
-    clip: auto !important;
-    overflow: visible !important;
-    visibility: visible !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    text-indent: 0 !important;
+    display: inline-block;
+    position: static;
+    width: auto;
+    max-width: 100%;
+    flex: 0 0 auto;
+    height: auto;
+    clip: auto;
+    overflow: visible;
+    visibility: visible;
+    margin: 0;
+    padding: 0;
     color: var(--text-normal);
     text-align: left;
 }
 
 .dify-sync-settings .title-line .heading-text {
-    all: unset;
-    display: block !important;
+    display: block;
     box-sizing: border-box;
-    width: auto !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    text-indent: 0 !important;
+    width: auto;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
     color: var(--text-normal);
+    font-family: inherit;
     text-align: left;
     font-size: 1.45rem;
     font-weight: 720;
@@ -238,7 +236,7 @@
 .dify-sync-settings .title-line > .heading-text,
 .dify-sync-settings .title-line > .settings-subtitle {
     align-self: flex-start;
-    margin-left: 0 !important;
+    margin-left: 0;
     text-align: left;
 }
 
@@ -406,11 +404,11 @@ section[aria-labelledby="mapping-title"] .section-card {
     min-height: 2.25rem;
 }
 
-.dify-sync-settings .setting-item-control:has(.secret-toggle) {
+.dify-sync-settings .setting-item-control.has-secret-toggle {
     position: relative;
 }
 
-.dify-sync-settings .setting-item-control:has(.secret-toggle) input {
+.dify-sync-settings .setting-item-control.has-secret-toggle input {
     padding-inline-end: 3rem;
 }
 
@@ -433,14 +431,14 @@ section[aria-labelledby="mapping-title"] .section-card {
     top: 50%;
     right: 8px;
     width: 30px;
-    height: 28px !important;
-    min-height: 28px !important;
-    max-height: 28px !important;
-    padding: 0 !important;
+    height: 28px;
+    min-height: 28px;
+    max-height: 28px;
+    padding: 0;
     line-height: 1;
-    border: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
     color: var(--dify-prototype-muted);
     transform: translateY(-50%);
 }
@@ -456,9 +454,9 @@ section[aria-labelledby="mapping-title"] .section-card {
 .dify-sync-settings .secret-toggle:hover,
 .dify-sync-settings .secret-toggle:active,
 .dify-sync-settings .secret-toggle:focus-visible {
-    border: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
     color: var(--text-normal);
     transform: translateY(-50%);
 }
@@ -910,7 +908,7 @@ section[aria-labelledby="mapping-title"] .section-card {
     grid-auto-rows: max-content;
 }
 
-.dify-sync-modal.mapping-modal #dataset-dropdown-menu:has(.dataset-empty-state) {
+.dify-sync-modal.mapping-modal #dataset-dropdown-menu.is-empty {
     align-content: center;
 }
 
@@ -931,16 +929,16 @@ section[aria-labelledby="mapping-title"] .section-card {
     width: 100%;
     text-align: left;
     margin: 0.125rem 0;
-    border-color: transparent !important;
-    background: transparent !important;
-    box-shadow: none !important;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
 }
 
 .dify-sync-modal .select-option:hover,
 .dify-sync-modal .select-option:focus-visible {
-    border-color: transparent !important;
-    background: var(--background-modifier-hover) !important;
-    box-shadow: none !important;
+    border-color: transparent;
+    background: var(--background-modifier-hover);
+    box-shadow: none;
 }
 
 .dify-sync-settings .help-icon {
@@ -1284,8 +1282,8 @@ section[aria-labelledby="mapping-title"] .section-card {
 }
 
 .dify-sync-modal.mapping-modal .dify-sync-obsidian-folder-tree .dify-sync-folder-toggle {
-    position: static !important;
-    inset: auto !important;
+    position: static;
+    inset: auto;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1295,10 +1293,10 @@ section[aria-labelledby="mapping-title"] .section-card {
     min-width: 24px;
     height: 28px;
     min-height: 28px;
-    margin: 0 !important;
+    margin: 0;
     padding: 0;
     line-height: 1;
-    transform: none !important;
+    transform: none;
     color: var(--text-faint);
 }
 
@@ -1652,8 +1650,8 @@ section[aria-labelledby="mapping-title"] .section-card {
     .diagnostic-body,
     .dify-sync-diagnostic-line
 ) {
-    font-size: var(--dify-body-font-size) !important;
-    font-weight: 400 !important;
+    font-size: var(--dify-body-font-size);
+    font-weight: 400;
 }
 
 .toast-region {
@@ -1705,19 +1703,11 @@ section[aria-labelledby="mapping-title"] .section-card {
 
 /* Obsidian shell scrollbar workaround: hide the outer native settings scrollbar while preserving plugin scroll behavior. */
 .dify-sync-outer-scroll-host {
-    overflow-y: hidden !important;
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
+    overflow-y: hidden;
 }
 
 .dify-sync-inner-scroll-host {
     overscroll-behavior: contain;
-}
-
-.dify-sync-outer-scroll-host::-webkit-scrollbar {
-    width: 0 !important;
-    height: 0 !important;
-    display: none !important;
 }
 
 .dify-sync-settings .app {
@@ -1765,8 +1755,8 @@ section[aria-labelledby="mapping-title"] .section-card {
 }
 
 .dify-sync-settings .app .metric-value {
-    font-size: 22px !important;
-    font-weight: 720 !important;
+    font-size: 22px;
+    font-weight: 720;
 }
 
 .dify-sync-settings .app .section-card,

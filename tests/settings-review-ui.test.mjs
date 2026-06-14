@@ -55,6 +55,19 @@ function getCssBlock(source, selector) {
 	return source.slice(start, end + 2);
 }
 
+test("styles avoid Obsidian Marketplace CSS lint warning patterns", () => {
+	for (const [pattern, label] of [
+		[/!important/, "important overrides"],
+		[/:has\(/, "broad :has selectors"],
+		[/\ball\s*:/, "all shorthand resets"],
+		[/\btext-indent\s*:/, "text-indent resets"],
+		[/\bscrollbar-width\s*:/, "Firefox scrollbar styling"],
+		[/::-webkit-scrollbar/, "WebKit scrollbar styling"],
+	]) {
+		assert.doesNotMatch(stylesSource, pattern, `styles.css should not use ${label}`);
+	}
+});
+
 test("settings tab renders restored review layout with native Obsidian setting controls", () => {
 	const settingsTabBlock = mainSource.slice(
 		mainSource.indexOf("class DifySyncSettingTab"),
@@ -154,16 +167,11 @@ test("settings modal content hides scrollbars without disabling scroll", () => {
 	]);
 	sourceContainsAll(stylesSource, [
 		".dify-sync-outer-scroll-host",
-		"overflow-y: hidden !important;",
-		"scrollbar-width: none !important;",
-		"-ms-overflow-style: none !important;",
+		"overflow-y: hidden;",
 		".dify-sync-inner-scroll-host",
 		"overscroll-behavior: contain;",
-		".dify-sync-outer-scroll-host::-webkit-scrollbar",
-		"width: 0 !important;",
-		"height: 0 !important;",
-		"display: none !important;",
 	]);
+	assert.doesNotMatch(stylesSource, /scrollbar-width|::-webkit-scrollbar|-ms-overflow-style/, "Scrollbar workaround should avoid marketplace CSS scrollbar warnings");
 	assert.equal(
 		mainSource.includes("this.addScrollbarHost(document.body);"),
 		false,
@@ -365,7 +373,7 @@ test("settings topbar renders localized plugin subtitle below the title", () => 
 		".dify-sync-settings .title-line > .heading-text,",
 		".dify-sync-settings .title-line > .settings-subtitle",
 		"align-self: flex-start;",
-		"margin-left: 0 !important;",
+		"margin-left: 0;",
 		"text-align: left;",
 	]);
 });
@@ -463,6 +471,7 @@ test("connection initial labels, placeholders, status dot, and summary metrics a
 	]);
 	sourceContainsAll(mainSource, [
 		".setName(this.createSettingName(this.plugin.t('apiKeyName'), { required: true }))",
+		"apiKeySetting.controlEl.addClass('has-secret-toggle')",
 		".setName(this.createSettingName(this.plugin.t('apiUrlName'), { required: true }))",
 		"required.className = 'required-marker';",
 	]);
@@ -483,17 +492,17 @@ test("connection initial labels, placeholders, status dot, and summary metrics a
 		"box-shadow: none;",
 		".dify-sync-settings .native-setting-row .setting-item-description",
 		"display: none;",
-		".dify-sync-settings .setting-item-control:has(.secret-toggle) input",
+		".dify-sync-settings .setting-item-control.has-secret-toggle input",
 		"padding-inline-end: 3rem;",
 		"display: inline-flex;",
 		"align-items: center;",
 		"justify-content: center;",
 		"top: 50%;",
 		"right: 8px;",
-		"height: 28px !important;",
-		"min-height: 28px !important;",
-		"max-height: 28px !important;",
-		"padding: 0 !important;",
+		"height: 28px;",
+		"min-height: 28px;",
+		"max-height: 28px;",
+		"padding: 0;",
 		"line-height: 1;",
 		"transform: translateY(-50%);",
 		".dify-sync-settings .secret-toggle .svg-icon",
@@ -635,6 +644,8 @@ test("mapping modal implements restored builder, pending mappings, and delete pr
 		"pendingEmptyDesc",
 		"pendingAdded",
 		"datasetsDropdownEmpty",
+		"this.datasetOptionsEl.removeClass('is-empty');",
+		"this.datasetOptionsEl.addClass('is-empty');",
 		"dataset-empty-state",
 		"dataset-checkmark",
 		"setIcon(checkmark, 'check')",
@@ -868,8 +879,8 @@ test("only API key and Dify service URL retain native setting help text", () => 
 		"white-space: nowrap;",
 		".dify-sync-settings .heading-text {",
 		"width: fit-content;",
-		"flex: 0 0 auto !important;",
-		"margin: 0 !important;",
+		"flex: 0 0 auto;",
+		"margin: 0;",
 	]);
 
 	assert.match(
@@ -879,8 +890,8 @@ test("only API key and Dify service URL retain native setting help text", () => 
 	);
 	assert.match(
 		getCssBlock(stylesSource, ".dify-sync-settings .title-line .heading-text {"),
-		/all: unset;[\s\S]*padding: 0[\s\S]*text-indent: 0/,
-		"Settings topbar heading should reset native/theme heading offsets instead of moving the title group",
+		/display: block;[\s\S]*padding: 0;[\s\S]*font-family: inherit/,
+		"Settings topbar heading should explicitly reset native/theme heading offsets instead of moving the title group",
 	);
 	assert.match(
 		mainSource,
@@ -968,7 +979,7 @@ test("major settings headings align with the background cards", () => {
 		".dify-sync-settings .title-line,",
 		".dify-sync-settings .heading-line {",
 		".dify-sync-settings .title-line .heading-text {",
-		"all: unset;",
+		"font-family: inherit;",
 	]);
 
 	assert.doesNotMatch(
@@ -1002,9 +1013,8 @@ test("test vault plugin styles keep natural topbar title alignment", () => {
 			".dify-sync-settings .title-line,",
 			".dify-sync-settings .heading-line {",
 			".dify-sync-settings .title-line .heading-text {",
-			"all: unset;",
-			"padding: 0",
-			"text-indent: 0",
+			"font-family: inherit;",
+			"padding: 0;",
 		]);
 		assert.doesNotMatch(
 			source,
@@ -1073,9 +1083,9 @@ test("custom dropdowns are scoped to the mapping modal", () => {
 		"height: 14px;",
 		"align-self: center;",
 		".dify-sync-modal .select-option",
-		"border-color: transparent !important;",
-		"background: transparent !important;",
-		"box-shadow: none !important;",
+		"border-color: transparent;",
+		"background: transparent;",
+		"box-shadow: none;",
 	]);
 
 	assert.match(
@@ -1156,6 +1166,7 @@ test("mapping modal picker columns stay constrained within the dialog", () => {
 		".dify-sync-modal.mapping-modal #folder-dropdown-menu,",
 		".dify-sync-modal.mapping-modal #dataset-dropdown-menu",
 		"height: 440px;",
+		".dify-sync-modal.mapping-modal #dataset-dropdown-menu.is-empty",
 		".dify-sync-modal .dataset-select-row",
 		"grid-template-columns: minmax(0, 1fr) auto;",
 		"gap: 8px;",
