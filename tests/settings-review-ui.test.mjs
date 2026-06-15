@@ -139,7 +139,11 @@ test("settings tab renders restored review layout with native Obsidian setting c
 			"concurrencyOption2: '2 files'",
 		]);
 			assert.doesNotMatch(settingsTabBlock, /\.setClass\('[^']+\s+[^']+'\)/, "Native Setting classes must be added one class at a time");
-			assert.equal(countOccurrences(settingsTabBlock, "this.update();"), 1, "Settings tab should only call update inside refreshSettingsView");
+			assert.equal(countOccurrences(settingsTabBlock, "this.update();"), 0, "Settings tab should avoid direct update calls so Obsidian 1.12.7 remains supported");
+			sourceContainsAll(settingsTabBlock, [
+				"const updateSettingTab = (this as unknown as Record<string, unknown>)['update'];",
+				"updateSettingTab.call(this);",
+			]);
 			assert.ok(
 				countOccurrences(settingsTabBlock, "this.refreshSettingsView();") >= 10,
 				"Settings tab actions should refresh through the Obsidian-version-aware helper",

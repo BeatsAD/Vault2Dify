@@ -1,6 +1,6 @@
 {
 	"name": "vault-to-dify",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"description": "Sync your Obsidian Vault to Dify Knowledge Base",
 	"main": "main.js",
 	"scripts": {

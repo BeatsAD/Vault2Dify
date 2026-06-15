@@ -43,6 +43,10 @@ jobs:
         run: |
           node -e 'const manifest=require("./manifest.json"); const tag=process.env.GITHUB_REF_NAME; if (manifest.version !== tag) { throw new Error(`manifest.json version ${manifest.version} does not match tag ${tag}`); }'
 
+      - name: Verify release notes exist
+        run: |
+          test -f "RELEASE_NOTES_${GITHUB_REF_NAME}.md"
+
       - name: Generate artifact attestations
         uses: actions/attest@v4
         with:
@@ -53,7 +57,7 @@ jobs:
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          body_path: RELEASE_NOTES_1.0.4.md
+          body_path: RELEASE_NOTES_${{ github.ref_name }}.md
           files: |
             main.js
             manifest.json

@@ -1516,8 +1516,11 @@ class DifySyncSettingTab extends PluginSettingTab {
 
 	refreshSettingsView(): void {
 		if (this.renderMode === 'declarative') {
-			this.update();
-			return;
+			const updateSettingTab = (this as unknown as Record<string, unknown>)['update'];
+			if (typeof updateSettingTab === 'function') {
+				updateSettingTab.call(this);
+				return;
+			}
 		}
 
 		this.renderLegacySettingsView();
