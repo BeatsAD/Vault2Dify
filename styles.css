@@ -191,6 +191,30 @@
     gap: 4px;
 }
 
+.dify-sync-settings .title-line > .setting-item,
+.dify-sync-settings .heading-line > .setting-item {
+    display: block;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.dify-sync-settings .title-line > .setting-item > .setting-item-info,
+.dify-sync-settings .heading-line > .setting-item > .setting-item-info {
+    width: auto;
+    margin: 0;
+    padding: 0;
+    flex: 0 1 auto;
+}
+
+.dify-sync-settings .title-line .setting-item-name,
+.dify-sync-settings .heading-line .setting-item-name {
+    margin: 0;
+    padding: 0;
+    line-height: inherit;
+}
+
 .dify-sync-settings .heading-text {
     display: inline-block;
     position: static;
@@ -224,7 +248,7 @@
 }
 
 .dify-sync-settings .settings-subtitle {
-    margin: 0.125rem 0 0;
+    margin: 4px 0 0;
     max-width: min(100%, 34rem);
     color: var(--text-muted);
     font-size: 0.86rem;

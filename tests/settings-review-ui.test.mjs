@@ -20,7 +20,7 @@ function readTestVaultFile(relativePath) {
 				`Missing external Obsidian test vault file: ${filePath}. ` +
 				"Run `npm run install:test-vault` before `npm test`, or set VAULT2DIFY_TEST_VAULT to another prepared vault.",
 			);
-		}
+	}
 		throw error;
 	}
 }
@@ -385,7 +385,18 @@ test("settings topbar renders localized plugin subtitle below the title", () => 
 		".dify-sync-settings .title-line",
 		"flex-direction: column;",
 		"align-items: flex-start;",
+		".dify-sync-settings .title-line > .setting-item,",
+		".dify-sync-settings .heading-line > .setting-item",
+		"min-height: 0;",
+		"border: 0;",
+		".dify-sync-settings .title-line > .setting-item > .setting-item-info,",
+		".dify-sync-settings .heading-line > .setting-item > .setting-item-info",
+		"flex: 0 1 auto;",
+		".dify-sync-settings .title-line .setting-item-name,",
+		".dify-sync-settings .heading-line .setting-item-name",
+		"line-height: inherit;",
 		".dify-sync-settings .settings-subtitle",
+		"margin: 4px 0 0;",
 		"color: var(--text-muted);",
 		"overflow-wrap: anywhere;",
 		".dify-sync-settings .title-line > .heading-text,",
@@ -1060,7 +1071,50 @@ test("test vault plugin styles keep natural topbar title alignment", () => {
 			/\.dify-sync-settings \.title-line\s*\{[^}]*padding-left:/s,
 			"Topbar title group should not be pushed right as a whole",
 		);
+		assert.match(
+			source,
+			/\.dify-sync-settings \.title-line > \.setting-item,\s*\.dify-sync-settings \.heading-line > \.setting-item\s*\{[^}]*min-height: 0;[^}]*margin: 0;[^}]*padding: 0;[^}]*border: 0;/s,
+			"Title rows should locally reset Obsidian Setting spacing instead of using manual offsets",
+		);
+		assert.match(
+			source,
+			/\.dify-sync-settings \.settings-subtitle\s*\{[^}]*margin: 4px 0 0;/s,
+			"Topbar subtitle should sit close below the plugin title",
+		);
 	}
+});
+
+test("section headings share spacing and align action buttons", () => {
+	const mappingSectionBlock = mainSource.slice(
+		mainSource.indexOf("private renderMappingSection"),
+		mainSource.indexOf("private renderMainMappingPagination"),
+	);
+	const createReviewSectionBlock = mainSource.slice(
+		mainSource.indexOf("private createReviewSection"),
+		mainSource.indexOf("private createSettingName"),
+	);
+
+	sourceContainsAll(mappingSectionBlock, [
+		"this.createReviewSection(containerEl, 'mapping-title', this.plugin.t('settingsReviewMappingTitle'), (head) => {",
+		"const add = new ButtonComponent(head)",
+		".setButtonText(this.plugin.t('addMapping'))",
+	]);
+	sourceContainsAll(createReviewSectionBlock, [
+		"const head = section.createDiv('section-head');",
+		"const titleLine = head.createDiv('heading-line');",
+		"const heading = new Setting(titleLine).setName(title).setHeading();",
+		"if (renderAction) renderAction(head);",
+	]);
+	assert.match(
+		stylesSource,
+		/\.dify-sync-settings \.topbar,\s*\.dify-sync-settings \.section-head,\s*\.dify-sync-modal \.pending-mapping-head\s*\{[^}]*align-items: center;[^}]*justify-content: space-between;/s,
+		"Section headings and right-side actions should align through the shared section-head flex row",
+	);
+	assert.match(
+		stylesSource,
+		/\.dify-sync-settings \.section-head\s*\{[^}]*margin-bottom: 0\.5rem;/s,
+		"Major settings sections should keep a consistent title-to-content gap",
+	);
 });
 
 test("settings body copy and buttons use consistent regular typography outside major headings", () => {

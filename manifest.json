@@ -1,7 +1,7 @@
 {
 	"id": "vault-to-dify",
 	"name": "Vault2Dify",
-	"version": "1.0.5",
+	"version": "1.0.6",
 	"minAppVersion": "1.12.7",
 	"description": "Sync selected Markdown notes to a Dify Knowledge Base.",
 	"author": "WenBin",
