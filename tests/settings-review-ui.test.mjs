@@ -499,10 +499,10 @@ test("connection initial labels, placeholders, status dot, and summary metrics a
 		"statusLine.createSpan({ cls: `status-dot ${this.getConnectionStatusToneClass()}` });",
 	]);
 	sourceContainsAll(mainSource, [
-		".setName(this.createSettingName(this.plugin.t('apiKeyName'), { required: true }))",
+		"this.setSettingName(setting, this.plugin.t('apiKeyName'), { required: true })",
 		"apiKeySetting.controlEl.addClass('has-secret-toggle')",
-		".setName(this.createSettingName(this.plugin.t('apiUrlName'), { required: true }))",
-		"required.className = 'required-marker';",
+		"this.setSettingName(setting, this.plugin.t('apiUrlName'), { required: true })",
+		"cls: 'required-marker'",
 	]);
 	assert.equal(mainSource.includes("}, 'lan-url', this.plugin.t('settingsReviewLanUrlPlaceholder'), { optional: true });"), false, "LAN URL field should not render in connection settings");
 	assert.equal(mainSource.includes("}, 'public-url', this.plugin.t('settingsReviewPublicUrlPlaceholder'), { optional: true });"), false, "Public URL field should not render in connection settings");
@@ -1091,7 +1091,7 @@ test("section headings share spacing and align action buttons", () => {
 	);
 	const createReviewSectionBlock = mainSource.slice(
 		mainSource.indexOf("private createReviewSection"),
-		mainSource.indexOf("private createSettingName"),
+		mainSource.indexOf("private setSettingName"),
 	);
 
 	sourceContainsAll(mappingSectionBlock, [

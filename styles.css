@@ -1716,6 +1716,28 @@ section[aria-labelledby="mapping-title"] .section-card {
 }
 
 /* Layout shell: fit the restored UI inside Obsidian's native settings pane. */
+.setting-item.dify-sync-settings-host,
+.setting-group .setting-item.dify-sync-settings-host {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: transparent;
+}
+
+.setting-item.dify-sync-settings-host > .setting-item-info {
+    display: none;
+}
+
+.setting-item.dify-sync-settings-host > .setting-item-control {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    text-align: start;
+}
+
 .dify-sync-settings {
     width: 100%;
     max-width: none;

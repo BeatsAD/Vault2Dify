@@ -4,6 +4,21 @@ English | [中文](CHANGELOG_ZH.md)
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.7 - 2026-10-08
+
+### Fixed
+
+- Fixed duplicate settings pages accumulating after refreshes, which squeezed content into narrow columns.
+- Removed the duplicate plugin title and description beside the settings page.
+- Fixed field labels displaying `[object DocumentFragment]` in independent settings windows.
+- Preserved field values, required markers, and the existing settings controls across refreshes.
+
+### Validation
+
+- Checked the settings page in Obsidian 1.13.7 and 1.14.4, in both embedded and independent windows.
+- Verified twelve consecutive refreshes, Chinese/English switching, and narrow-window layouts.
+- Added runtime regression tests for settings lifecycle and labels from different windows.
+
 ## 1.0.0 - 2026-06-08
 
 ### Added

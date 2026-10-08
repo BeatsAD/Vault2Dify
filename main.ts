@@ -1499,10 +1499,15 @@ class DifySyncSettingTab extends PluginSettingTab {
 				desc: this.plugin.t('settingsSubtitle'),
 				render: (setting: Setting) => {
 					this.renderMode = 'declarative';
-					this.renderSettingsApp(setting.settingEl);
+					setting.settingEl.addClass('dify-sync-settings-host');
+					// Obsidian clears controlEl when it reuses a declarative setting row.
+					setting.controlEl.empty();
+					const pageEl = setting.controlEl.createDiv();
+					this.renderSettingsApp(pageEl);
 					return () => {
 						this.scrollbarMarkToken++;
 						this.clearScrollbarHosts();
+						pageEl.remove();
 					};
 				},
 			},
@@ -1736,7 +1741,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 		const apiKeySetting = this.createNativeSetting(card, 'setting-row');
 		apiKeySetting.controlEl.addClass('has-secret-toggle');
 		apiKeySetting
-			.setName(this.createSettingName(this.plugin.t('apiKeyName'), { required: true }))
+			.then((setting) => this.setSettingName(setting, this.plugin.t('apiKeyName'), { required: true }))
 			.setTooltip(this.plugin.t('apiKeyDesc'))
 			.addText((text) => {
 				keyInput = text
@@ -1773,7 +1778,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 			});
 
 		this.createNativeSetting(card, 'setting-row')
-			.setName(this.createSettingName(this.plugin.t('apiUrlName'), { required: true }))
+			.then((setting) => this.setSettingName(setting, this.plugin.t('apiUrlName'), { required: true }))
 			.setTooltip(this.plugin.t('apiUrlDesc'))
 			.addText((text) => {
 				const input = text
@@ -1944,7 +1949,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 	private renderSyncSettingsSection(containerEl: HTMLElement) {
 		const { card } = this.createReviewSection(containerEl, 'auto-title', this.plugin.t('settingsReviewSyncTitle'));
 		this.createNativeSetting(card, 'setting-row', 'switch-row')
-			.setName(this.createSettingName(this.plugin.t('sectionAuto')))
+			.then((setting) => this.setSettingName(setting, this.plugin.t('sectionAuto')))
 			.addToggle((toggle) => {
 				toggle
 					.setValue(this.plugin.settings.autoSyncEnabled)
@@ -2084,26 +2089,19 @@ class DifySyncSettingTab extends PluginSettingTab {
 		return { card: section.createDiv('section-card') };
 	}
 
-	private createSettingName(label: string, options: { required?: boolean; optional?: boolean } = {}): DocumentFragment {
-		const ownerDocument = this.containerEl.doc;
-		const fragment = ownerDocument.createDocumentFragment();
-		const labelEl = ownerDocument.createElement('span');
-		labelEl.className = 'setting-label';
-		labelEl.textContent = label;
-		fragment.appendChild(labelEl);
+	private setSettingName(setting: Setting, label: string, options: { required?: boolean; optional?: boolean } = {}): void {
+		// Passing DOM fragments through setName can stringify nodes from another window.
+		setting.setName(label);
+		setting.nameEl.empty();
+		setting.nameEl.createSpan({ text: label, cls: 'setting-label' });
 		if (options.required) {
-			const required = ownerDocument.createElement('span');
-			required.className = 'required-marker';
-			required.textContent = '*';
-			required.setAttribute('aria-label', 'Required');
-			fragment.appendChild(required);
+			setting.nameEl.createSpan({ text: '*', cls: 'required-marker', attr: { 'aria-label': 'Required' } });
 		}
-		return fragment;
 	}
 
 	private createSettingRow(card: HTMLElement, label: string, tooltip: string, options: { required?: boolean } = {}): { control: HTMLElement } {
 		const setting = this.createNativeSetting(card, 'setting-row')
-			.setName(this.createSettingName(label, options))
+			.then((setting) => this.setSettingName(setting, label, options))
 			.setDesc(tooltip)
 			.setTooltip(tooltip);
 		return { control: setting.controlEl };
@@ -2117,7 +2115,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 
 	private createAdvancedText(container: HTMLElement, label: string, value: string, onChange: (value: string) => Promise<void>, id: string, placeholder = this.plugin.t('urlPlaceholder'), options: { optional?: boolean } = {}) {
 		this.createNativeSetting(container, 'advanced-field')
-			.setName(this.createSettingName(label, options))
+			.then((setting) => this.setSettingName(setting, label, options))
 			.addText((text) => {
 				const input = text
 					.setPlaceholder(placeholder)
@@ -2145,7 +2143,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 		const valueByKey = new Map(options.map(([optionValue]) => [String(optionValue), optionValue]));
 		const dropdownOptions = Object.fromEntries(options.map(([optionValue, optionLabel]) => [String(optionValue), optionLabel]));
 		this.createNativeSetting(container, 'advanced-field')
-			.setName(this.createSettingName(label))
+			.then((setting) => this.setSettingName(setting, label))
 			.addDropdown((dropdown) => {
 				dropdown
 					.addOptions(dropdownOptions)
