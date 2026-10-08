@@ -4,6 +4,22 @@ English | [中文](CHANGELOG_ZH.md)
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.8 - 2026-10-08
+
+### Fixed
+
+- Keep all four recent-sync summary cards in one row, including narrow settings windows.
+- Reduce spacing between connection labels and inputs, and remove the extra separator between API Key and service URL.
+- Include mapping pagination inside the bordered mapping card.
+- Align the auto-sync label and switch on the same row across window sizes.
+- Remove unwanted separators from sync settings and keep pagination controls compact in narrow windows.
+
+### Validation
+
+- Checked Obsidian 1.14.4 in embedded and independent settings windows, with Chinese/English content and dark/light themes.
+- Verified container boundaries, empty and multi-page mappings, horizontal table scrolling, and twelve consecutive refreshes.
+- All 62 automated checks, TypeScript checks, and Obsidian lint passed.
+
 ## 1.0.7 - 2026-10-08
 
 ### Fixed

@@ -144,9 +144,12 @@
 }
 
 .dify-sync-settings {
-    width: min(100%, 920px);
-    max-width: 920px;
-    padding-bottom: 1.75rem;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    container-type: inline-size;
     color: var(--text-normal);
 }
 
@@ -296,12 +299,13 @@
 
 .dify-sync-settings .sync-summary {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.625rem;
-    margin-bottom: 1rem;
+    margin-bottom: 14px;
 }
 
 .dify-sync-settings .metric {
+    min-width: 0;
     min-height: 4.125rem;
     padding: 0.75rem;
     border: 1px solid var(--dify-prototype-border);
@@ -312,6 +316,7 @@
 .dify-sync-settings .metric-label {
     color: var(--dify-prototype-muted);
     font-size: 0.78rem;
+    overflow-wrap: anywhere;
 }
 
 .dify-sync-settings .metric-value {
@@ -361,10 +366,9 @@
     background: var(--dify-prototype-panel);
 }
 
-section[aria-labelledby="mapping-title"] .section-card {
+.dify-sync-settings .section[aria-labelledby="mapping-title"] > .section-card {
     padding: 0;
-    border: 0;
-    background: transparent;
+    overflow: hidden;
 }
 
 .dify-sync-settings .native-setting-row.setting-row {
@@ -380,9 +384,24 @@ section[aria-labelledby="mapping-title"] .section-card {
     box-shadow: none;
 }
 
+/* New Obsidian setting groups draw dividers with a pseudo-element, independently of row borders. */
+.dify-sync-settings .native-setting-row.setting-item:not(.setting-item-heading)::before {
+    content: none;
+}
+
+.dify-sync-settings .native-setting-row.setting-row.connection-field {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    min-height: 0;
+    padding: 0;
+    margin-bottom: 16px;
+}
+
 .dify-sync-settings .native-setting-row.setting-row > .setting-item-info,
 .dify-sync-settings .native-setting-row.advanced-field > .setting-item-info {
     min-width: 0;
+    align-self: center;
+    margin: 0;
     padding: 0;
     background: transparent;
 }
@@ -684,6 +703,9 @@ section[aria-labelledby="mapping-title"] .section-card {
 
 .dify-sync-settings .main-mapping-table {
     --dify-main-mapping-row-height: 54px;
+    margin-top: 0;
+    border: 0;
+    border-radius: 0;
 }
 
 .dify-sync-settings .main-mapping-table .mapping-header,
@@ -714,12 +736,14 @@ section[aria-labelledby="mapping-title"] .section-card {
     gap: var(--dify-mapping-pagination-gap);
     min-height: 30px;
     margin-top: 0;
-    padding: var(--dify-mapping-pagination-gap) var(--dify-mapping-pagination-gap) var(--dify-mapping-pagination-gap) 0;
+    padding: var(--dify-mapping-pagination-gap);
     color: var(--dify-prototype-muted);
     font-size: 13px;
+    white-space: nowrap;
 }
 
 .dify-sync-settings .main-mapping-pagination button {
+    flex: 0 0 30px;
     width: 30px;
     min-width: 30px;
     height: 30px;
@@ -791,8 +815,13 @@ section[aria-labelledby="mapping-title"] .section-card {
     white-space: nowrap;
 }
 
-.dify-sync-settings .switch-row {
+.dify-sync-settings .native-setting-row.setting-row.switch-row {
     grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+}
+
+.dify-sync-settings .native-setting-row.switch-row > .setting-item-control {
+    width: auto;
 }
 
 .dify-sync-settings .toggle {
@@ -1682,12 +1711,6 @@ section[aria-labelledby="mapping-title"] .section-card {
     pointer-events: none;
 }
 
-@container (min-width: 680px) {
-    .dify-sync-settings .sync-summary {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-}
-
 @container (max-width: 520px) {
     .dify-sync-settings .topbar,
     .dify-sync-settings .section-head,
@@ -1696,7 +1719,7 @@ section[aria-labelledby="mapping-title"] .section-card {
         flex-direction: column;
     }
 
-    .dify-sync-settings .native-setting-row.setting-row,
+    .dify-sync-settings .native-setting-row.setting-row:not(.switch-row),
     .dify-sync-settings .advanced-connection,
     .dify-sync-settings #advanced-sync,
     .dify-sync-modal .mapping-builder,
@@ -1736,15 +1759,6 @@ section[aria-labelledby="mapping-title"] .section-card {
     width: 100%;
     min-width: 0;
     text-align: start;
-}
-
-.dify-sync-settings {
-    width: 100%;
-    max-width: none;
-    padding: 0;
-    margin: 0;
-    min-width: 0;
-    container-type: inline-size;
 }
 
 /* Obsidian shell scrollbar workaround: hide the outer native settings scrollbar while preserving plugin scroll behavior. */
@@ -1838,11 +1852,6 @@ section[aria-labelledby="mapping-title"] .section-card {
     min-height: 2rem;
 }
 
-.dify-sync-settings .app .sync-summary {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    margin-bottom: 14px;
-}
-
 .dify-sync-modal .mapping-panel .dropdown-menu {
     height: 440px;
     max-height: min(440px, calc(100vh - 220px));
@@ -1859,11 +1868,7 @@ section[aria-labelledby="mapping-title"] .section-card {
         padding: 20px 16px 64px;
     }
 
-    .dify-sync-settings .app .sync-summary {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .dify-sync-settings .app .setting-row,
+    .dify-sync-settings .app .setting-row:not(.switch-row),
     .dify-sync-settings .app .advanced-field,
     .dify-sync-settings .app #advanced-sync {
         grid-template-columns: 1fr;

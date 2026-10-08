@@ -1738,7 +1738,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 	private renderConnectionSection(containerEl: HTMLElement) {
 		const { card } = this.createReviewSection(containerEl, 'connection-title', this.plugin.t('settingsReviewConnectionTitle'));
 		let keyInput: HTMLInputElement;
-		const apiKeySetting = this.createNativeSetting(card, 'setting-row');
+		const apiKeySetting = this.createNativeSetting(card, 'setting-row', 'connection-field');
 		apiKeySetting.controlEl.addClass('has-secret-toggle');
 		apiKeySetting
 			.then((setting) => this.setSettingName(setting, this.plugin.t('apiKeyName'), { required: true }))
@@ -1777,7 +1777,7 @@ class DifySyncSettingTab extends PluginSettingTab {
 				toggle.setAttr('aria-pressed', 'false');
 			});
 
-		this.createNativeSetting(card, 'setting-row')
+		this.createNativeSetting(card, 'setting-row', 'connection-field')
 			.then((setting) => this.setSettingName(setting, this.plugin.t('apiUrlName'), { required: true }))
 			.setTooltip(this.plugin.t('apiUrlDesc'))
 			.addText((text) => {

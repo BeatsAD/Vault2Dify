@@ -607,7 +607,7 @@ test("main mapping table renders centered empty state with four-row viewport and
 		"color: var(--dify-prototype-muted);",
 		".dify-sync-settings .main-mapping-pagination",
 		"--dify-mapping-pagination-gap: 8px;",
-		"padding: var(--dify-mapping-pagination-gap) var(--dify-mapping-pagination-gap) var(--dify-mapping-pagination-gap) 0;",
+		"padding: var(--dify-mapping-pagination-gap);",
 	]);
 });
 
