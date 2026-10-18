@@ -1,3 +1,5 @@
+![Vault2Dify 封面效果图：将 Obsidian 笔记同步到 Dify 知识库](docs/images/vault2dify-cover.png)
+
 # Vault2Dify
 
 [![最新版本](https://img.shields.io/github/v/release/BeatsAD/Vault2Dify)](https://github.com/BeatsAD/Vault2Dify/releases/latest)

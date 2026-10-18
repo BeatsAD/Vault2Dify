@@ -1,3 +1,5 @@
+![Vault2Dify cover illustration: Obsidian notes syncing to Dify knowledge bases](docs/images/vault2dify-cover.png)
+
 # Vault2Dify
 
 [![Latest release](https://img.shields.io/github/v/release/BeatsAD/Vault2Dify)](https://github.com/BeatsAD/Vault2Dify/releases/latest)
