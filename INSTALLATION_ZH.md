@@ -2,7 +2,7 @@
 
 [English](INSTALLATION.md) | 中文
 
-本文说明如何构建、安装并首次配置 `Vault2Dify`。
+本文说明如何安装并首次配置 `Vault2Dify`，同时提供可选的源码构建步骤。
 
 相关文档：
 
@@ -17,18 +17,15 @@
 - 至少一个 Dify 知识库。
 - 如果从源码构建，需要 Node.js 和 npm。
 
-## 构建
+## 从 Obsidian 安装
 
-在插件源码目录运行：
-
-```bash
-npm install
-npm run build
-```
-
-构建会在项目根目录生成 `main.js`。
+1. 在 Obsidian 桌面端打开 `设置 -> 社区插件 -> 浏览`。
+2. 搜索 **Vault2Dify**，安装并启用。也可以[打开社区插件页面](https://obsidian.md/plugins?id=vault-to-dify)。
+3. 继续阅读[首次配置](#首次配置)。
 
 ## 手动安装
+
+从[最新 GitHub Release](https://github.com/BeatsAD/Vault2Dify/releases/latest) 下载 `main.js`、`manifest.json` 和 `styles.css`。如果从源码构建，则使用项目根目录中的这三个文件。
 
 在你的 Obsidian 仓库中创建插件目录：
 
@@ -45,6 +42,19 @@ styles.css
 ```
 
 如有需要，重启 Obsidian，然后在 `设置 -> 社区插件 -> 已安装插件` 中启用 `Vault2Dify`。
+
+## 构建
+
+源码构建为可选步骤。从 Obsidian 安装或下载 Release 文件时，可以跳过本节。
+
+在插件源码目录运行：
+
+```bash
+npm install
+npm run build
+```
+
+构建会在项目根目录生成 `main.js`。按[手动安装](#手动安装)步骤安装构建文件。
 
 ## 首次配置
 

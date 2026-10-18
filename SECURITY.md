@@ -62,4 +62,8 @@ Release packages must not contain:
 
 ## Reporting Security Issues
 
-If you find a security issue, please do not post sensitive details in a public issue. Open a GitHub security advisory if available, or contact the repository maintainer through the private channel listed on the repository.
+Report security issues privately through [GitHub's Report a vulnerability form](https://github.com/BeatsAD/Vault2Dify/security/advisories/new). This sends the report to the repository maintainers without opening a public issue.
+
+Include the affected plugin and Obsidian versions, reproduction steps, and expected impact. Use synthetic notes and redact API keys, private URLs, and personal vault content.
+
+Use [public issues](https://github.com/BeatsAD/Vault2Dify/issues) for ordinary bugs and feature requests. Do not post vulnerability details or sensitive data there.

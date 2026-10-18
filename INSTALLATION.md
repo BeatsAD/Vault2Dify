@@ -2,7 +2,7 @@
 
 English | [中文](INSTALLATION_ZH.md)
 
-This guide explains how to build, install, and first configure `Vault2Dify`.
+This guide explains how to install and first configure `Vault2Dify`, with optional instructions for building from source.
 
 Related docs:
 
@@ -17,18 +17,15 @@ Related docs:
 - At least one Dify Knowledge Base.
 - Node.js and npm if you build from source.
 
-## Build
+## Install from Obsidian
 
-Run these commands in the plugin source directory:
-
-```bash
-npm install
-npm run build
-```
-
-The build creates `main.js` in the project root.
+1. Open `Settings -> Community plugins -> Browse` in Obsidian desktop.
+2. Search for **Vault2Dify**, then install and enable it. You can also [open its community plugin page](https://obsidian.md/plugins?id=vault-to-dify).
+3. Continue with [First-Time Configuration](#first-time-configuration).
 
 ## Manual Install
+
+Download `main.js`, `manifest.json`, and `styles.css` from the [latest GitHub release](https://github.com/BeatsAD/Vault2Dify/releases/latest). If you built from source, use the three files in the project root instead.
 
 Create this folder inside your Obsidian vault:
 
@@ -45,6 +42,19 @@ styles.css
 ```
 
 Then restart Obsidian if needed and enable `Vault2Dify` from `Settings -> Community plugins -> Installed plugins`.
+
+## Build
+
+Building from source is optional. Skip this section if you install from Obsidian or download the release files.
+
+Run these commands in the plugin source directory:
+
+```bash
+npm install
+npm run build
+```
+
+The build creates `main.js` in the project root. Follow [Manual Install](#manual-install) to install the built files.
 
 ## First-Time Configuration
 
