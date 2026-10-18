@@ -16,11 +16,19 @@ Vault2Dify 是一款桌面端 Obsidian 插件，适合使用 Obsidian 写个人�
 
 ## 界面预览
 
-以下为 Obsidian 1.14.4 中的连接设置与路径映射，使用示例配置，未展示真实 Dify 连接。
+以下为 Obsidian 1.14.4 中的核心英文界面，使用示例配置，未展示真实 Dify 连接。
 
-![Vault2Dify 设置概览，使用示例 Dify 服务地址](docs/images/settings-overview.png)
+**连接配置**
 
-![将示例 Obsidian 目录映射到 Dify 知识库](docs/images/path-mapping.png)
+![Vault2Dify 英文设置概览与连接配置，使用示例 Dify 服务地址](docs/images/settings-overview-en.png)
+
+**路径映射**
+
+![英文路径映射，将目录和单篇笔记映射到一个或多个知识库](docs/images/path-mapping-en.png)
+
+**同步设置**
+
+![英文同步设置，包含自动同步选项、同步诊断和手动同步](docs/images/sync-settings-en.png)
 
 ## 功能
 

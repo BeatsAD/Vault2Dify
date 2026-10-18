@@ -16,11 +16,19 @@ The plugin UI defaults to English. You can switch to Chinese from the language i
 
 ## Preview
 
-Connection settings and path mappings in Obsidian 1.14.4, shown with example configuration. These screenshots do not show a live Dify connection.
+Core plugin screens in English, captured in Obsidian 1.14.4 with example configuration. These screenshots do not show a live Dify connection.
 
-![Vault2Dify settings overview with an example Dify URL](docs/images/settings-overview.png)
+**Connection settings**
 
-![Path mapping from an example Obsidian folder to a Dify knowledge base](docs/images/path-mapping.png)
+![English Vault2Dify overview and connection settings with an example Dify URL](docs/images/settings-overview-en.png)
+
+**Path mappings**
+
+![English path mappings showing folders and a note mapped to one or more knowledge bases](docs/images/path-mapping-en.png)
+
+**Sync settings**
+
+![English sync settings with automatic sync options, diagnostics, and manual sync](docs/images/sync-settings-en.png)
 
 ## Features
 
