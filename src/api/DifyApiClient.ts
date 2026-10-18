@@ -11,6 +11,7 @@ import type {
 	ConnectionProbeResult,
 	DifyDocument,
 	DifyMutationResponse,
+	DifyMetadataField,
 	DifySyncSettings,
 	KnowledgeBaseInfo,
 } from '../types';
@@ -21,6 +22,11 @@ import {
 	sanitizeBaseUrl,
 	uniqueStrings,
 } from '../utils/path';
+
+function isMetadataField(value: unknown): value is DifyMetadataField {
+	return isRecord(value) && typeof value.id === 'string' && value.id.length > 0
+		&& typeof value.name === 'string' && ['string', 'number', 'time'].includes(String(value.type));
+}
 
 type ErrorLikeRecord = {
 	message?: unknown;
@@ -209,6 +215,24 @@ export class DifyApiClient {
 		});
 	}
 
+	async documentExists(datasetId: string, documentId: string): Promise<boolean> {
+		// A 404 from a mutation can mean an unsupported route. Only a complete,
+		// valid document list can confirm that recreating the document is safe.
+		for (let page = 1; page <= 100; page++) {
+			const json = await this.requestUnknown(`/datasets/${encodeURIComponent(datasetId)}/documents?page=${page}&limit=100`, { method: 'GET' });
+			if (!isRecord(json) || !Array.isArray(json.data) || !json.data.every(isDifyDocument) || typeof json.has_more !== 'boolean') {
+				throw new DifyApiError('Unable to confirm whether the original Dify document exists: unexpected document list response.');
+			}
+			if (json.data.some((document) => document.id === documentId)) {
+				return true;
+			}
+			if (!json.has_more) {
+				return false;
+			}
+		}
+		throw new DifyApiError('Unable to confirm whether the original Dify document exists: document list is incomplete.');
+	}
+
 	async updateDocumentByText(datasetId: string, documentId: string, name: string, text: string): Promise<DifyMutationResponse> {
 		return this.mutateTextDocument(datasetId, documentId, {
 			name,
@@ -219,6 +243,27 @@ export class DifyApiClient {
 
 	async getIndexingStatus(datasetId: string, batch: string): Promise<unknown> {
 		return this.requestUnknown(`/datasets/${encodeURIComponent(datasetId)}/documents/${encodeURIComponent(batch)}/indexing-status`, { method: 'GET' });
+	}
+
+	async listMetadataFields(datasetId: string): Promise<DifyMetadataField[]> {
+		const json = await this.requestUnknown(`/datasets/${encodeURIComponent(datasetId)}/metadata`, { method: 'GET' });
+		if (!isRecord(json) || !Array.isArray(json.doc_metadata) || !json.doc_metadata.every(isMetadataField)) {
+			throw new DifyApiError('Dify returned an unexpected metadata field list.');
+		}
+		return json.doc_metadata;
+	}
+
+	async createMetadataField(datasetId: string, name: string, type: DifyMetadataField['type']): Promise<DifyMetadataField> {
+		return this.request(`/datasets/${encodeURIComponent(datasetId)}/metadata`, {
+			method: 'POST', body: { name, type },
+		}, isMetadataField);
+	}
+
+	async updateDocumentMetadata(datasetId: string, documentId: string, metadata: { id: string; name: string; value: string | number }[]): Promise<void> {
+		await this.request(`/datasets/${encodeURIComponent(datasetId)}/documents/metadata`, {
+			method: 'POST',
+			body: { operation_data: [{ document_id: documentId, metadata_list: metadata, partial_update: true }] },
+		}, (value): value is { result: string } => isRecord(value) && value.result === 'success');
 	}
 
 	private async mutateTextDocument(datasetId: string, documentId: string | undefined, body: Record<string, unknown>): Promise<DifyMutationResponse> {
