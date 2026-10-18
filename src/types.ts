@@ -72,6 +72,8 @@ export interface DifySyncSettings {
 	knowledgeBases: KnowledgeBaseInfo[];
 	lastDatasetRefresh: string;
 	autoSyncEnabled: boolean;
+	metadataSyncEnabled: boolean;
+	metadataSyncGeneration: number;
 	eventSyncEnabled: boolean;
 	syncOnStartup: boolean;
 	periodicFullScanEnabled: boolean;
@@ -98,12 +100,15 @@ export interface SyncRecord {
 	lastBatch?: string;
 	deletedLocal?: boolean;
 	lastError?: string;
+	metadataHash?: string;
+	metadataError?: string;
 }
 
 export interface SyncFailureDetail {
 	filePath: string;
 	datasetId: string;
 	message: string;
+	stage?: 'content' | 'metadata';
 }
 
 export interface RecentSyncResult {
@@ -141,6 +146,18 @@ export interface DifyMutationResponse {
 	[key: string]: unknown;
 }
 
+export interface DifyMetadataField {
+	id: string;
+	name: string;
+	type: 'string' | 'number' | 'time';
+}
+
+export interface PreparedMetadata {
+	values: { name: string; type: DifyMetadataField['type']; value: string | number; text: string }[];
+	errors: string[];
+	fingerprint: string;
+}
+
 export interface SyncTask {
 	file: TFile;
 	content: string;
@@ -148,6 +165,8 @@ export interface SyncTask {
 	datasetId: string;
 	remoteName: string;
 	recordKey: string;
+	contentChanged?: boolean;
+	metadata?: PreparedMetadata;
 }
 
 export interface DocumentIndex {

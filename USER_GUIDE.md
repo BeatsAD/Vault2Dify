@@ -71,6 +71,16 @@ Rules:
 
 Vault2Dify uses the Obsidian file path as the Dify document name, such as `Work/ProjectA/meeting-notes.md`, so same-name files in different folders remain distinct.
 
+## Metadata Sync
+
+Open **Settings → Vault2Dify → Sync settings** and enable **Metadata sync**. The switch defaults to off. No field selection or additional mapping is required. It takes effect on the next manual or automatic sync and covers all top-level YAML properties, including `tags` and `aliases`; inline properties and tags in the body are not extracted.
+
+The plugin reuses same-name custom fields and creates missing fields. A new field's type is determined by the first non-empty value synced: text → `string`, finite number → `number`, ISO date/datetime → `time`. Booleans, lists and nested objects use text (`true`/`false` or JSON). Existing text fields accept the text representation; existing number fields accept finite numbers or numeric text; existing time fields require ISO dates/datetimes. Date-only values use UTC midnight; datetimes without a timezone use the device's local timezone. Field types are never changed automatically.
+
+Updates replace values for the local properties while retaining other remote fields. Removing a property, setting it to `null` or `""`, or disabling metadata sync does not remove its remote value. Empty lists and objects are written as `[]` and `{}`. Built-in fields (`document_name`, `uploader`, `upload_date`, `last_update_date`, `source`) cannot be overwritten. Invalid or incompatible properties are reported in existing sync diagnostics rather than silently treated as successful.
+
+Enabling or re-enabling backfills existing documents on the next sync even if the text has not changed. A metadata failure preserves successful content uploads and document IDs; the next sync retries only metadata. Your Dify version and API key must support listing/creating metadata fields and assigning document metadata. If those APIs are unavailable, content can still sync and metadata failures remain visible and retryable.
+
 ## 3. Sync Behavior
 
 Manual sync can be started from:

@@ -103,3 +103,58 @@ await test("probeConnection classifies HTML dataset responses as unexpected_resp
 	assert.equal(probe.statusCode, undefined);
 	assert.match(probe.error, /did not return a Dify knowledge base API response/);
 });
+
+await test("text updates keep the existing body and hyphen/underscore route fallback", async () => {
+	const requests = [];
+	globalThis.__difyRequestUrl = async (options) => {
+		requests.push(options);
+		return options.url.endsWith("update-by-text")
+			? { status: 404, text: "Unsupported route" }
+			: { status: 200, text: JSON.stringify({ document: { id: "doc-1" } }) };
+	};
+	const client = createClient({ difyApiUrl: "http://dify.example" });
+	await client.updateDocumentByText("kb/1", "doc-1", "Note.md", "---\nowner: me\n---\nText");
+	assert.deepEqual(requests.map(request => new URL(request.url).pathname), [
+		"/v1/datasets/kb%2F1/documents/doc-1/update-by-text",
+		"/v1/datasets/kb%2F1/documents/doc-1/update_by_text",
+	]);
+	for (const request of requests) {
+		assert.deepEqual(JSON.parse(request.body), {
+			name: "Note.md", text: "---\nowner: me\n---\nText", process_rule: { mode: "automatic" },
+		});
+	}
+});
+
+await test("document existence checks traverse pages and reuse authentication", async () => {
+	const requests = [];
+	globalThis.__difyRequestUrl = async (options) => {
+		requests.push(options);
+		const page = Number(new URL(options.url).searchParams.get("page"));
+		return { status: 200, text: JSON.stringify({
+			data: [{ id: page === 1 ? "other" : "doc-1" }], has_more: page === 1,
+		}) };
+	};
+	const client = createClient({ difyApiUrl: "http://dify.example" });
+	assert.equal(await client.documentExists("kb/1", "doc-1"), true);
+	assert.equal(requests.length, 2);
+	assert.equal(requests[0].headers.Authorization, "Bearer key");
+	assert.equal(requests[0].method, "GET");
+	assert.match(requests[0].url, /datasets\/kb%2F1\/documents\?page=1&limit=100$/);
+	assert.equal(await client.documentExists("kb/1", "missing"), false);
+});
+
+await test("document absence is never inferred from failed, malformed, or incomplete lists", async () => {
+	const client = createClient({ difyApiUrl: "http://dify.example" });
+	for (const response of [
+		{ status: 404, text: "Unsupported route" },
+		{ status: 401, text: "Unauthorized" },
+		{ status: 500, text: "Unavailable" },
+		{ status: 200, text: "<html>Login</html>" },
+		{ status: 200, text: JSON.stringify({ data: [] }) },
+		{ status: 200, text: JSON.stringify({ data: [{}], has_more: false }) },
+		{ status: 200, text: JSON.stringify({ data: [], has_more: true }) },
+	]) {
+		globalThis.__difyRequestUrl = async () => response;
+		await assert.rejects(() => client.documentExists("kb-1", "doc-1"));
+	}
+});

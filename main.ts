@@ -57,6 +57,7 @@ import {
 import {
 	buildSettingsReviewSummary,
 } from './src/sync-utils';
+import { MetadataSync, MetadataSyncError, prepareMetadata } from './src/sync/MetadataSync';
 
 const DEFAULT_SETTINGS: DifySyncSettings = {
 	schemaVersion: 2,
@@ -74,6 +75,8 @@ const DEFAULT_SETTINGS: DifySyncSettings = {
 	knowledgeBases: [],
 	lastDatasetRefresh: '',
 	autoSyncEnabled: false,
+	metadataSyncEnabled: false,
+	metadataSyncGeneration: 0,
 	eventSyncEnabled: true,
 	syncOnStartup: true,
 	periodicFullScanEnabled: true,
@@ -314,6 +317,8 @@ const STRINGS: Record<Language, Record<string, string>> = {
 		selectFolderTitle: '选择 Obsidian 目录或笔记',
 		choose: '选择',
 		sectionAuto: '自动同步',
+		metadataSync: '元数据同步',
+		metadataSyncFailed: '正文已同步，元数据同步失败：{message}',
 		autoSyncName: '启用自动同步',
 		autoSyncDesc: '总开关；关闭后事件触发和定时全量同步都会暂停。',
 		eventSyncName: '文件变更后自动同步',
@@ -579,6 +584,8 @@ const STRINGS: Record<Language, Record<string, string>> = {
 		selectFolderTitle: 'Select Obsidian folder or note',
 		choose: 'Choose',
 		sectionAuto: 'Auto sync',
+		metadataSync: 'Metadata sync',
+		metadataSyncFailed: 'Content synced; metadata sync failed: {message}',
 		autoSyncName: 'Enable auto sync',
 		autoSyncDesc: 'Master switch. Event sync and periodic full scans pause when disabled.',
 		eventSyncName: 'Sync after file changes',
@@ -776,6 +783,9 @@ export default class DifySyncPlugin extends Plugin {
 		merged.language = merged.language === 'en' ? 'en' : 'zh-CN';
 		merged.endpointMode = ['primary', 'lan', 'public', 'auto'].includes(merged.endpointMode) ? merged.endpointMode : 'primary';
 		merged.apiPathStyle = ['auto', 'hyphen', 'underscore'].includes(merged.apiPathStyle) ? merged.apiPathStyle : 'auto';
+		merged.metadataSyncEnabled = rawRecord.metadataSyncEnabled === true;
+		merged.metadataSyncGeneration = typeof rawRecord.metadataSyncGeneration === 'number' && Number.isSafeInteger(rawRecord.metadataSyncGeneration) && rawRecord.metadataSyncGeneration >= 0
+			? rawRecord.metadataSyncGeneration : 0;
 		merged.syncInterval = clampNumber(merged.syncInterval, 5, 240, 30);
 		merged.debounceSeconds = clampNumber(merged.debounceSeconds, 1, 120, 8);
 		merged.requestTimeoutSeconds = clampNumber(merged.requestTimeoutSeconds, 5, 180, 30);
@@ -933,7 +943,7 @@ export default class DifySyncPlugin extends Plugin {
 				? this.t('syncComplete', syncStatsVars(stats))
 				: undefined;
 			this.settings.recentSyncResult = this.createRecentSyncResult(source, startedAt, stats, partialFailure);
-			if (stats.failed > 0 && stats.synced === 0) {
+			if (stats.failed > 0 && stats.synced === 0 && stats.failedFiles.some(failure => failure.stage !== 'metadata')) {
 				this.markConnectionFailure(new DifyApiError(partialFailure || this.t('syncFailedShort')));
 			} else {
 				this.markConnectionSuccessFromActive();
@@ -992,6 +1002,8 @@ export default class DifySyncPlugin extends Plugin {
 			const content = await this.app.vault.cachedRead(file);
 			const hash = this.hashContent(content);
 			const remoteName = this.makeRemoteName(file.path);
+			const metadata = this.settings.metadataSyncEnabled
+				? prepareMetadata(content, this.settings.metadataSyncGeneration) : undefined;
 
 			for (const datasetId of datasetIds) {
 				recoverDeletedSyncRecordForCreatedFile(
@@ -1004,7 +1016,9 @@ export default class DifySyncPlugin extends Plugin {
 				const recordKey = this.getRecordKey(datasetId, file.path);
 				const record = this.syncRecords.get(recordKey);
 
-				if (record && record.hash === hash && record.documentId && !record.deletedLocal && record.remoteName === remoteName) {
+				const metadataPending = metadata && (metadata.values.length > 0 || metadata.errors.length > 0)
+					&& (record?.metadataError || record?.metadataHash !== this.hashContent(metadata.fingerprint));
+				if (record && !record.lastError && record.hash === hash && record.documentId && !record.deletedLocal && record.remoteName === remoteName && !metadataPending) {
 					stats.skipped++;
 					continue;
 				}
@@ -1016,6 +1030,8 @@ export default class DifySyncPlugin extends Plugin {
 					datasetId,
 					remoteName,
 					recordKey,
+					contentChanged: !record || !!record.lastError || record.hash !== hash || !record.documentId || !!record.deletedLocal || record.remoteName !== remoteName,
+					metadata,
 				});
 			}
 		}
@@ -1043,6 +1059,7 @@ export default class DifySyncPlugin extends Plugin {
 	}
 
 	private async processTasks(tasks: SyncTask[], indexes: Map<string, DocumentIndex>, stats: SyncStats) {
+		const metadataSync = new MetadataSync(this.client, () => this.settings.metadataSyncEnabled);
 		let cursor = 0;
 		let completed = 0;
 		const workerCount = Math.min(this.settings.maxConcurrent, tasks.length);
@@ -1058,25 +1075,31 @@ export default class DifySyncPlugin extends Plugin {
 				}), completed, tasks.length);
 
 				try {
-					await this.syncTask(task, indexes.get(task.datasetId));
+					await this.syncTask(task, indexes.get(task.datasetId), metadataSync);
 					stats.synced++;
 					stats.syncedFiles.push(task.file.path);
 				} catch (error) {
 					stats.failed++;
-					const message = this.getConnectionFailureMessage(this.getConnectionFailureReason(error));
+					const metadataFailure = error instanceof MetadataSyncError;
+					const message = metadataFailure
+						? this.t('metadataSyncFailed', { message: error.message })
+						: this.getConnectionFailureMessage(this.getConnectionFailureReason(error));
 					stats.failedFiles.push({
 						filePath: task.file.path,
 						datasetId: task.datasetId,
 						message,
+						stage: metadataFailure ? 'metadata' : 'content',
 					});
 					this.syncRecords.set(task.recordKey, {
 						filePath: task.file.path,
 						datasetId: task.datasetId,
 						remoteName: task.remoteName,
-						hash: task.hash,
-						lastModified: task.file.stat.mtime,
-						lastSyncedAt: new Date().toISOString(),
-						lastError: message,
+						hash: '',
+						lastModified: 0,
+						lastSyncedAt: '',
+						...this.syncRecords.get(task.recordKey),
+						lastError: metadataFailure ? undefined : message,
+						metadataError: metadataFailure ? message : this.syncRecords.get(task.recordKey)?.metadataError,
 					});
 					this.debug(`Failed to sync ${task.file.path} -> ${task.datasetId}`, message);
 				}
@@ -1086,18 +1109,50 @@ export default class DifySyncPlugin extends Plugin {
 		await Promise.all(Array.from({ length: workerCount }, worker));
 	}
 
-	private async syncTask(task: SyncTask, index?: DocumentIndex) {
+	private async syncTask(task: SyncTask, index?: DocumentIndex, metadataSync = new MetadataSync(this.client, () => this.settings.metadataSyncEnabled)) {
+		let record = this.syncRecords.get(task.recordKey);
+		if (task.contentChanged !== false || !record?.documentId || record.lastError || record.deletedLocal || record.hash !== task.hash || record.remoteName !== task.remoteName) {
+			await this.syncDocumentContent(task, index);
+			record = this.syncRecords.get(task.recordKey);
+		}
+		if (!this.settings.metadataSyncEnabled || !record?.documentId) return;
+		const metadata = task.metadata || prepareMetadata(task.content, this.settings.metadataSyncGeneration);
+		const metadataHash = this.hashContent(metadata.fingerprint);
+		if (!metadata.errors.length && !record.metadataError && record.metadataHash === metadataHash) return;
+		if (await metadataSync.sync(task.datasetId, record.documentId, metadata)) {
+			this.syncRecords.set(task.recordKey, { ...record, metadataHash, metadataError: undefined });
+			await this.savePluginData();
+		}
+	}
+
+	private async syncDocumentContent(task: SyncTask, index?: DocumentIndex) {
 		if (!index) {
 			throw new Error(`Unable to load remote document index for dataset ${task.datasetId}`);
 		}
 
 		const oldRecord = this.syncRecords.get(task.recordKey);
-		const existingById = oldRecord?.documentId ? index.byId.get(oldRecord.documentId) : undefined;
+		const existingById = oldRecord?.documentId
+			? index.byId.get(oldRecord.documentId) || { id: oldRecord.documentId, name: oldRecord.remoteName }
+			: undefined;
 		const existingByName = index.byName.get(task.remoteName);
 		const existingDocument = existingById || existingByName;
 		let response: DifyMutationResponse;
+		let created = false;
 
 		if (existingDocument?.id) {
+			// Retain a name-matched association even if its first update fails.
+			if (!oldRecord?.documentId) {
+				this.syncRecords.set(task.recordKey, {
+					filePath: task.file.path,
+					datasetId: task.datasetId,
+					remoteName: existingDocument.name || task.remoteName,
+					hash: '',
+					lastModified: 0,
+					lastSyncedAt: '',
+					...oldRecord,
+					documentId: existingDocument.id,
+				});
+			}
 			try {
 				response = await this.client.updateDocumentByText(task.datasetId, existingDocument.id, task.remoteName, task.content);
 			} catch (error) {
@@ -1105,21 +1160,22 @@ export default class DifySyncPlugin extends Plugin {
 				if (apiError.status !== 404) {
 					throw apiError;
 				}
+				if (await this.client.documentExists(task.datasetId, existingDocument.id)) {
+					throw apiError;
+				}
+				created = true;
 				response = await this.client.createDocumentByText(task.datasetId, task.remoteName, task.content);
 			}
 		} else {
+			created = true;
 			response = await this.client.createDocumentByText(task.datasetId, task.remoteName, task.content);
 		}
 
 		const responseDocument = getDifyMutationDocument(response);
-		const documentId = responseDocument?.id || existingDocument?.id || oldRecord?.documentId;
+		const documentId = responseDocument?.id || (created ? undefined : existingDocument?.id);
 
 		if (!documentId) {
 			throw new Error('Dify did not return a document id.');
-		}
-
-		if (this.settings.pollIndexStatus && response.batch) {
-			await this.pollIndexStatus(task.datasetId, response.batch);
 		}
 
 		this.syncRecords.set(task.recordKey, {
@@ -1131,7 +1187,13 @@ export default class DifySyncPlugin extends Plugin {
 			lastModified: task.file.stat.mtime,
 			lastSyncedAt: new Date().toISOString(),
 			lastBatch: response.batch,
+			metadataHash: oldRecord?.documentId === documentId ? oldRecord.metadataHash : undefined,
+			metadataError: oldRecord?.documentId === documentId ? oldRecord.metadataError : undefined,
 		});
+		await this.savePluginData();
+		if (this.settings.pollIndexStatus && response.batch) {
+			await this.pollIndexStatus(task.datasetId, response.batch);
+		}
 
 		index.byId.set(documentId, { id: documentId, name: task.remoteName });
 		index.byName.set(task.remoteName, { id: documentId, name: task.remoteName });
@@ -1962,6 +2024,16 @@ class DifySyncSettingTab extends PluginSettingTab {
 						})();
 					});
 				toggle.toggleEl.setAttr('data-action', 'toggle-auto-sync');
+			});
+		this.createNativeSetting(card, 'setting-row', 'switch-row')
+			.then((setting) => this.setSettingName(setting, this.plugin.t('metadataSync')))
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.metadataSyncEnabled).onChange((value) => {
+					this.plugin.settings.metadataSyncEnabled = value;
+					if (value) this.plugin.settings.metadataSyncGeneration++;
+					void this.plugin.savePluginData();
+				});
+				toggle.toggleEl.setAttr('data-action', 'toggle-metadata-sync');
 			});
 		const advanced = card.createDiv({ attr: { id: 'advanced-sync' } });
 		this.createAdvancedSelect<number>(advanced, this.plugin.t('syncAfterChange'), this.plugin.settings.debounceSeconds, [

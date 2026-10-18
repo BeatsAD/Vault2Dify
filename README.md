@@ -19,6 +19,18 @@ The plugin UI defaults to English. You can switch to Chinese from the language i
 - Keep deletion conservative: local note deletion and mapping deletion do not automatically delete remote Dify documents.
 - Support English and Chinese settings, notices, commands, and status messages.
 
+## Document updates and metadata
+
+Markdown is uploaded as text, including YAML frontmatter. **Metadata sync** is off by default, including after upgrading. Enable it under **Sync settings** to also sync all YAML properties as Dify structured metadata. It uses your enabled path mappings and works with manual sync even when auto sync is off.
+
+Existing same-name custom fields are reused; missing fields are created automatically. Text, numbers and ISO dates map to Dify text, number and time fields. Booleans become `true`/`false` text; lists and objects become JSON text. Existing field types are preserved. Incompatible values, invalid YAML and conflicts with built-in field names are reported in sync diagnostics; other valid properties still sync.
+
+Only properties present with non-empty values are assigned. Remote-only fields, removed or empty local properties, and remote data after disabling the switch are preserved. Enabling or re-enabling the switch backfills metadata on the next sync without re-uploading unchanged content. Metadata failures preserve the document ID and successful content record; the next sync retries metadata only. See the [user guide](USER_GUIDE.md#metadata-sync) for conversion details.
+
+Updates and renames reuse the recorded Dify document ID. After an update returns 404, the plugin recreates the document only when a fresh, complete document list confirms that the original ID is absent. If it still exists or its status cannot be confirmed, sync fails and keeps the association for retry. A recreated document has a new ID and does not inherit the deleted document's custom metadata.
+
+This reduces unintended document recreation; it does not establish the cause of every metadata-loss report. Verify metadata retention on your Dify version by comparing the document ID and custom fields before an update and after indexing completes.
+
 ## Quick Start
 
 Build the plugin:

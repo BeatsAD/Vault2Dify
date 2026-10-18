@@ -4,6 +4,26 @@ English | [中文](CHANGELOG_ZH.md)
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.9 - 2026-10-18
+
+### Added
+
+- Optional metadata sync under Sync settings, off by default on installation and upgrade. Enable it to sync all top-level YAML properties using your existing path mappings.
+- Automatically reuse same-name Dify custom fields and create missing fields. Support text, numbers and ISO dates, with boolean values and JSON representations for lists and objects.
+- Backfill metadata for existing documents when enabling or re-enabling the switch, without re-uploading unchanged content.
+
+### Fixed
+
+- Preserve remote-only metadata and retain remote values when local properties are removed or emptied, or metadata sync is disabled.
+- Keep document IDs and successful content records when metadata assignment fails, so the next sync retries metadata only.
+- Confirm that the original document is absent before recreating it after an update 404. Preserve document associations and retry failed content updates.
+
+### Validation
+
+- Passed existing regression tests and 15 new metadata sync regression groups, TypeScript checks and Obsidian lint.
+- Verified the switch and Chinese/English labels in native Obsidian 1.14.4.
+- Verified creation, metadata backfill, updates, disabling and re-enabling on Dify 1.14.0, including retained document IDs and remote-only values after indexing completed.
+
 ## 1.0.8 - 2026-10-08
 
 ### Fixed
