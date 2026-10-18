@@ -1,4 +1,10 @@
+![Vault2Dify cover illustration: Obsidian notes syncing to Dify knowledge bases](docs/images/vault2dify-cover.png)
+
 # Vault2Dify
+
+[![Latest release](https://img.shields.io/github/v/release/BeatsAD/Vault2Dify)](https://github.com/BeatsAD/Vault2Dify/releases/latest)
+[![Build](https://github.com/BeatsAD/Vault2Dify/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/BeatsAD/Vault2Dify/actions/workflows/build.yml)
+[![MIT License](https://img.shields.io/github/license/BeatsAD/Vault2Dify)](LICENSE)
 
 English | [中文](README_ZH.md)
 
@@ -7,6 +13,22 @@ Sync selected Obsidian Markdown notes to one or more Dify Knowledge Bases.
 Vault2Dify is a desktop-only Obsidian plugin for users who keep notes in Obsidian and use Dify for personal or team knowledge-base Q&A. It syncs only the Markdown notes that match your enabled path mappings to the Dify service URL you configure.
 
 The plugin UI defaults to English. You can switch to Chinese from the language icon in the settings top bar.
+
+## Preview
+
+Core plugin screens in English, captured in Obsidian 1.14.4 with example configuration. These screenshots do not show a live Dify connection.
+
+**Connection settings**
+
+![English Vault2Dify overview and connection settings with an example Dify URL](docs/images/settings-overview-en.png)
+
+**Path mappings**
+
+![English path mappings showing folders and a note mapped to one or more knowledge bases](docs/images/path-mapping-en.png)
+
+**Sync settings**
+
+![English sync settings with automatic sync options, diagnostics, and manual sync](docs/images/sync-settings-en.png)
 
 ## Features
 
@@ -33,14 +55,15 @@ This reduces unintended document recreation; it does not establish the cause of 
 
 ## Quick Start
 
-Build the plugin:
+### Install from Obsidian
 
-```bash
-npm install
-npm run build
-```
+1. Open `Settings -> Community plugins -> Browse` in Obsidian desktop.
+2. Search for **Vault2Dify**, then install and enable it. You can also [open its community plugin page](https://obsidian.md/plugins?id=vault-to-dify).
+3. Open `Settings -> Vault2Dify` to configure the connection and mappings.
 
-Copy the release files into your vault:
+### Manual installation
+
+Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/BeatsAD/Vault2Dify/releases/latest). Place all three files in your vault:
 
 ```text
 .obsidian/plugins/vault-to-dify/
@@ -49,9 +72,9 @@ Copy the release files into your vault:
 └── styles.css
 ```
 
-Enable `Vault2Dify` from `Settings -> Community plugins -> Installed plugins`, then open `Settings -> Vault2Dify`.
+Restart Obsidian if needed, enable `Vault2Dify` from `Settings -> Community plugins -> Installed plugins`, then open `Settings -> Vault2Dify`.
 
-First-time setup:
+### First-time setup
 
 1. Enter your Dify Knowledge Base API key.
 2. Enter the Dify service URL reachable from the device running Obsidian.

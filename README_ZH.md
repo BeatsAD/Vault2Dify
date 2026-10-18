@@ -1,4 +1,10 @@
+![Vault2Dify 封面效果图：将 Obsidian 笔记同步到 Dify 知识库](docs/images/vault2dify-cover.png)
+
 # Vault2Dify
+
+[![最新版本](https://img.shields.io/github/v/release/BeatsAD/Vault2Dify)](https://github.com/BeatsAD/Vault2Dify/releases/latest)
+[![构建状态](https://github.com/BeatsAD/Vault2Dify/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/BeatsAD/Vault2Dify/actions/workflows/build.yml)
+[![MIT 许可证](https://img.shields.io/github/license/BeatsAD/Vault2Dify)](LICENSE)
 
 [English](README.md) | 中文
 
@@ -7,6 +13,22 @@
 Vault2Dify 是一款桌面端 Obsidian 插件，适合使用 Obsidian 写个人笔记、项目资料或团队知识库，同时使用 Dify 做知识库问答的用户。插件只会把命中已启用路径映射的 Markdown 笔记同步到你配置的 Dify 服务地址。
 
 插件界面默认使用英文。你可以在设置页顶部的语言图标中切换为中文。
+
+## 界面预览
+
+以下为 Obsidian 1.14.4 中的核心英文界面，使用示例配置，未展示真实 Dify 连接。
+
+**连接配置**
+
+![Vault2Dify 英文设置概览与连接配置，使用示例 Dify 服务地址](docs/images/settings-overview-en.png)
+
+**路径映射**
+
+![英文路径映射，将目录和单篇笔记映射到一个或多个知识库](docs/images/path-mapping-en.png)
+
+**同步设置**
+
+![英文同步设置，包含自动同步选项、同步诊断和手动同步](docs/images/sync-settings-en.png)
 
 ## 功能
 
@@ -33,14 +55,15 @@ Markdown 会作为文本上传，其中包含 YAML frontmatter。**元数据同�
 
 ## 快速开始
 
-构建插件：
+### 从 Obsidian 安装
 
-```bash
-npm install
-npm run build
-```
+1. 在 Obsidian 桌面端打开 `设置 -> 社区插件 -> 浏览`。
+2. 搜索 **Vault2Dify**，安装并启用。也可以[打开社区插件页面](https://obsidian.md/plugins?id=vault-to-dify)。
+3. 打开 `设置 -> Vault2Dify`，配置连接与路径映射。
 
-将发布文件复制到你的 Obsidian 仓库：
+### 手动安装
+
+从[最新 Release](https://github.com/BeatsAD/Vault2Dify/releases/latest) 下载 `main.js`、`manifest.json` 和 `styles.css`，将这三个文件放入你的 Obsidian 仓库：
 
 ```text
 .obsidian/plugins/vault-to-dify/
@@ -49,9 +72,9 @@ npm run build
 └── styles.css
 ```
 
-在 `设置 -> 社区插件 -> 已安装插件` 中启用 `Vault2Dify`，然后打开 `设置 -> Vault2Dify`。
+如有需要，重启 Obsidian，在 `设置 -> 社区插件 -> 已安装插件` 中启用 `Vault2Dify`，然后打开 `设置 -> Vault2Dify`。
 
-首次配置：
+### 首次配置
 
 1. 填写 Dify 知识库 API Key。
 2. 填写运行 Obsidian 的设备可以访问的 Dify 服务地址。
